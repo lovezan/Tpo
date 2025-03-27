@@ -1,0 +1,266 @@
+import type { Experience } from "@/components/experience-list"
+import {
+  getExperiencesFromFirestore,
+  getCompaniesFromFirestore,
+  saveExperienceToFirestore,
+  updateExperienceInFirestore,
+  deleteExperienceFromFirestore,
+  companyExistsInFirestore,
+  getCompanyByNameFromFirestore,
+  addOrUpdateCompanyInFirestore,
+  approveExperienceInFirestore,
+  rejectExperienceInFirestore,
+  getPendingExperiencesFromFirestore,
+  loginAdmin,
+  logoutAdmin,
+} from "./firebase"
+
+// Company type definition
+export type Company = {
+  id: number
+  name: string
+  logo: string
+  category?: string
+  studentsPlaced: number
+}
+
+// Admin type definition
+export type Admin = {
+  uid?: string
+  email: string
+  password?: string
+  name: string
+}
+
+// Function to get experiences
+export async function getExperiences(): Promise<Experience[]> {
+  try {
+    const experiences = await getExperiencesFromFirestore()
+    return experiences.length > 0 ? experiences : getMockExperiences()
+  } catch (error) {
+    console.error("Error getting experiences:", error)
+    // Return mock data if Firebase fails
+    return getMockExperiences()
+  }
+}
+
+// Function to get companies
+export async function getCompanies(): Promise<Company[]> {
+  try {
+    const companies = await getCompaniesFromFirestore()
+    return companies.length > 0 ? companies : getMockCompanies()
+  } catch (error) {
+    console.error("Error getting companies:", error)
+    // Return mock data if Firebase fails
+    return getMockCompanies()
+  }
+}
+
+// Function to check if a company exists by name
+export async function companyExists(companyName: string): Promise<boolean> {
+  try {
+    return await companyExistsInFirestore(companyName)
+  } catch (error) {
+    console.error("Error checking if company exists:", error)
+    return false
+  }
+}
+
+// Function to get a company by name
+export async function getCompanyByName(companyName: string): Promise<Company | null> {
+  try {
+    return await getCompanyByNameFromFirestore(companyName)
+  } catch (error) {
+    console.error("Error getting company by name:", error)
+    return null
+  }
+}
+
+// Function to add or update a company
+export async function addOrUpdateCompany(companyName: string, companyLogo = "/placeholder.svg?height=80&width=80") {
+  try {
+    return await addOrUpdateCompanyInFirestore(companyName, companyLogo)
+  } catch (error) {
+    console.error("Error adding or updating company:", error)
+    return false
+  }
+}
+
+// Function to check if an experience with the same ID already exists
+export async function experienceExists(id: number): Promise<boolean> {
+  try {
+    const experiences = await getExperiences()
+    return experiences.some((exp) => exp.id === id)
+  } catch (error) {
+    console.error("Error checking if experience exists:", error)
+    return false
+  }
+}
+
+// Function to save a new experience
+export async function saveExperience(experience: Experience) {
+  try {
+    return await saveExperienceToFirestore(experience)
+  } catch (error) {
+    console.error("Error saving experience:", error)
+    // Store in localStorage as fallback
+    try {
+      const experiences = JSON.parse(localStorage.getItem("experiences") || "[]")
+      experiences.push(experience)
+      localStorage.setItem("experiences", JSON.stringify(experiences))
+      return true
+    } catch (localError) {
+      console.error("Error saving to localStorage:", localError)
+      return false
+    }
+  }
+}
+
+// Function to update an experience
+export async function updateExperience(updatedExperience: Experience) {
+  try {
+    return await updateExperienceInFirestore(updatedExperience)
+  } catch (error) {
+    console.error("Error updating experience:", error)
+    return false
+  }
+}
+
+// Function to delete an experience
+export async function deleteExperience(id: number) {
+  try {
+    return await deleteExperienceFromFirestore(id)
+  } catch (error) {
+    console.error("Error deleting experience:", error)
+    return false
+  }
+}
+
+// Function to authenticate admin
+export async function authenticateAdmin(email: string, password: string): Promise<Admin | null> {
+  try {
+    // For development purposes - REMOVE IN PRODUCTION
+    if (email === "admin@nith.ac.in" && password === "password") {
+      return {
+        uid: "demo-admin",
+        email: email,
+        name: "Demo Admin",
+      }
+    }
+
+    // Try Firebase authentication
+    return await loginAdmin(email, password)
+  } catch (error) {
+    console.error("Error authenticating admin:", error)
+
+    // For development purposes - REMOVE IN PRODUCTION
+    if (email === "admin@nith.ac.in" && password === "password") {
+      return {
+        uid: "demo-admin",
+        email: email,
+        name: "Demo Admin",
+      }
+    }
+
+    return null
+  }
+}
+
+// Function to logout admin
+export async function logoutAdminUser() {
+  try {
+    return await logoutAdmin()
+  } catch (error) {
+    console.error("Error logging out admin:", error)
+    // Clear localStorage anyway
+    localStorage.removeItem("currentAdmin")
+    return true
+  }
+}
+
+// Function to get pending experiences
+export async function getPendingExperiences(): Promise<Experience[]> {
+  try {
+    return await getPendingExperiencesFromFirestore()
+  } catch (error) {
+    console.error("Error getting pending experiences:", error)
+    return []
+  }
+}
+
+// Function to approve an experience
+export async function approveExperience(id: number) {
+  try {
+    return await approveExperienceInFirestore(id)
+  } catch (error) {
+    console.error("Error approving experience:", error)
+    return false
+  }
+}
+
+// Function to reject an experience
+export async function rejectExperience(id: number) {
+  try {
+    return await rejectExperienceInFirestore(id)
+  } catch (error) {
+    console.error("Error rejecting experience:", error)
+    return false
+  }
+}
+
+// Mock data functions for fallback
+function getMockExperiences(): Experience[] {
+  return [
+    {
+      id: 1,
+      studentName: "Rahul Sharma",
+      branch: "Computer Science",
+      company: "Microsoft",
+      year: 2023,
+      type: "On-Campus",
+      excerpt:
+        "The interview process consisted of 3 technical rounds and 1 HR round. The technical rounds focused on data structures, algorithms, and system design...",
+      profileImage: "/placeholder.svg?height=100&width=100",
+      companyLogo: "/placeholder.svg?height=40&width=40",
+      status: "approved",
+      preparationStrategy:
+        "I focused on strengthening my fundamentals in data structures and algorithms. I solved problems on LeetCode daily, starting with easy ones and gradually moving to medium and hard.",
+      interviewProcess:
+        "The interview process at Microsoft consisted of 3 technical rounds and 1 HR round. The first round focused on problem-solving with data structures like arrays and strings.",
+      tips: "Start your preparation early, at least 3-4 months before the placement season. Focus on understanding concepts rather than memorizing solutions.",
+      challenges:
+        "The most challenging part was the system design round as I had limited experience in this area. I overcame this by studying system design principles and practicing designing simple systems.",
+      role: "Software Engineer",
+    },
+    {
+      id: 2,
+      studentName: "Priya Patel",
+      branch: "Electronics & Communication",
+      company: "Amazon",
+      year: 2023,
+      type: "On-Campus",
+      excerpt:
+        "Preparation for Amazon required strong fundamentals in data structures and algorithms. The interview process was rigorous with 4 rounds...",
+      profileImage: "/placeholder.svg?height=100&width=100",
+      companyLogo: "/placeholder.svg?height=40&width=40",
+      status: "approved",
+      preparationStrategy:
+        "I prepared for Amazon by focusing on their leadership principles alongside technical skills. I solved at least 200 LeetCode problems, focusing on medium and hard difficulty.",
+      interviewProcess:
+        "Amazon's interview process had 4 rounds: an online assessment followed by 3 interview rounds. The online assessment had 2 coding problems and some MCQs.",
+      tips: "For Amazon, understand their leadership principles thoroughly and prepare examples from your experience that demonstrate these principles.",
+      challenges:
+        "The biggest challenge was balancing technical preparation with behavioral question preparation. Amazon places a lot of emphasis on their leadership principles.",
+      role: "Software Development Engineer",
+    },
+  ]
+}
+
+function getMockCompanies(): Company[] {
+  return [
+    { id: 1, name: "Microsoft", logo: "/placeholder.svg?height=80&width=80", studentsPlaced: 20 },
+    { id: 2, name: "Google", logo: "/placeholder.svg?height=80&width=80", studentsPlaced: 15 },
+    { id: 3, name: "Amazon", logo: "/placeholder.svg?height=80&width=80", studentsPlaced: 18 },
+  ]
+}
+

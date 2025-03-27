@@ -1,0 +1,24 @@
+// Firestore Rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow anyone to read approved experiences
+    match /experiences/{experienceId} {
+      allow read: if resource.data.status == 'approved' || request.auth != null;
+      allow create: if true; // Allow anyone to submit an experience
+      allow update, delete: if request.auth != null; // Only authenticated users can update/delete
+    }
+    
+    // Allow anyone to read companies
+    match /companies/{companyId} {
+      allow read: if true;
+      allow write: if request.auth != null; // Only authenticated users can write
+    }
+    
+    // Only authenticated users can access admin documents
+    match /admins/{adminId} {
+      allow read, write: if request.auth != null && request.auth.uid == adminId;
+    }
+  }
+}
+
