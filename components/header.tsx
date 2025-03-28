@@ -62,13 +62,9 @@ export default function Header() {
             />
             <div className="flex flex-col">
               <span className="hidden font-bold sm:inline-block text-foreground dark:text-white nith-theme:text-white">
-                NITH Placement Portal
+                NITH Career Compass
               </span>
-              <div className="hidden sm:inline-flex items-center">
-                <span className="text-[10px] font-medium text-green-700 dark:text-green-400 nith-theme:text-gold">
-                  Official NITH Affiliated
-                </span>
-              </div>
+            
             </div>
           </Link>
         </div>
