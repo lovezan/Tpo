@@ -114,7 +114,7 @@ export async function experienceExists(id: number): Promise<boolean> {
   }
 }
 
-// Function to save a new experience
+// Update the saveExperience function to handle the case where companyType might be undefined
 export async function saveExperience(experience: Experience) {
   try {
     return await saveExperienceToFirestore(experience)
@@ -313,6 +313,7 @@ function getMockExperiences(): Experience[] {
       studentName: "Rahul Sharma",
       branch: "Computer Science",
       company: "Microsoft",
+      companyType: "tech",
       year: 2023,
       type: "On-Campus",
       excerpt:
@@ -334,6 +335,7 @@ function getMockExperiences(): Experience[] {
       studentName: "Priya Patel",
       branch: "Electronics & Communication",
       company: "Amazon",
+      companyType: "tech",
       year: 2023,
       type: "On-Campus",
       excerpt:
@@ -355,9 +357,27 @@ function getMockExperiences(): Experience[] {
 
 function getMockCompanies(): Company[] {
   return [
-    { id: 1, name: "Microsoft", logo: "/placeholder.svg?height=80&width=80", studentsPlaced: 20 },
-    { id: 2, name: "Google", logo: "/placeholder.svg?height=80&width=80", studentsPlaced: 15 },
-    { id: 3, name: "Amazon", logo: "/placeholder.svg?height=80&width=80", studentsPlaced: 18 },
+    { id: 1, name: "Microsoft", logo: "/placeholder.svg?height=80&width=80", category: "Tech", studentsPlaced: 20 },
+    { id: 2, name: "Google", logo: "/placeholder.svg?height=80&width=80", category: "Tech", studentsPlaced: 15 },
+    { id: 3, name: "Amazon", logo: "/placeholder.svg?height=80&width=80", category: "Tech", studentsPlaced: 18 },
+    {
+      id: 4,
+      name: "Goldman Sachs",
+      logo: "/placeholder.svg?height=80&width=80",
+      category: "Finance",
+      studentsPlaced: 12,
+    },
+    {
+      id: 5,
+      name: "JPMorgan Chase",
+      logo: "/placeholder.svg?height=80&width=80",
+      category: "Finance",
+      studentsPlaced: 10,
+    },
+    { id: 6, name: "Tata Motors", logo: "/placeholder.svg?height=80&width=80", category: "Core", studentsPlaced: 8 },
+    { id: 7, name: "Flipkart", logo: "/placeholder.svg?height=80&width=80", category: "Product", studentsPlaced: 14 },
+    { id: 8, name: "Infosys", logo: "/placeholder.svg?height=80&width=80", category: "Service", studentsPlaced: 25 },
+    { id: 9, name: "TCS", logo: "/placeholder.svg?height=80&width=80", category: "Service", studentsPlaced: 30 },
   ]
 }
 

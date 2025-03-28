@@ -1,5 +1,7 @@
-import { signInWithEmailAndPassword, signOut } from "firebase/auth"
+import { initializeApp } from "firebase/app"
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth"
 import {
+  getFirestore,
   collection,
   doc,
   getDoc,
@@ -10,74 +12,31 @@ import {
   where,
   deleteDoc,
   serverTimestamp,
-  addDoc,
 } from "firebase/firestore"
-import { auth, db } from "./firebase-config"
+
+// Add this import at the top if not already present
 import type { Experience } from "@/components/experience-list"
-import type { Company } from "@/lib/data-utils"
+import type { Company, Admin } from "./data-utils"
 
-// Authentication functions
-export async function loginAdmin(email: string, password: string) {
-  try {
-    console.log("Attempting login with:", email)
-    const userCredential = await signInWithEmailAndPassword(auth, email, password)
-    const user = userCredential.user
-
-    console.log("User authenticated:", user.uid)
-
-    // Get admin details from Firestore
-    const adminDoc = await getDoc(doc(db, "admins", user.uid))
-    if (!adminDoc.exists()) {
-      console.error("Admin document not found for uid:", user.uid)
-      // Instead of throwing an error, return a basic admin object
-      return {
-        uid: user.uid,
-        email: user.email,
-        name: "Admin User",
-      }
-    }
-
-    const adminData = adminDoc.data()
-    console.log("Admin data retrieved:", adminData.name)
-
-    return {
-      uid: user.uid,
-      email: user.email,
-      name: adminData.name || "Admin User",
-    }
-  } catch (error: any) {
-    console.error("Login error:", error.code, error.message)
-    throw error
-  }
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
-export async function logoutAdmin() {
-  try {
-    await signOut(auth)
-    return true
-  } catch (error) {
-    console.error("Logout error:", error)
-    throw error
-  }
-}
+const app = initializeApp(firebaseConfig)
+const auth = getAuth(app)
+const db = getFirestore(app)
 
-// Firestore data functions
-export async function getExperiencesFromFirestore() {
+// Function to get experiences from Firestore
+export async function getExperiencesFromFirestore(): Promise<Experience[]> {
   try {
     console.log("Fetching experiences from Firestore")
     const experiencesRef = collection(db, "experiences")
-
-    // Check if user is admin
-    const isAdmin = !!localStorage.getItem("currentAdmin")
-
-    // If not admin, only query for approved experiences
-    let experiencesSnapshot
-    if (!isAdmin) {
-      const q = query(experiencesRef, where("status", "==", "approved"))
-      experiencesSnapshot = await getDocs(q)
-    } else {
-      experiencesSnapshot = await getDocs(experiencesRef)
-    }
+    const experiencesSnapshot = await getDocs(experiencesRef)
 
     const experiences: Experience[] = []
     experiencesSnapshot.forEach((doc) => {
@@ -87,6 +46,7 @@ export async function getExperiencesFromFirestore() {
         studentName: data.studentName || "",
         branch: data.branch || "",
         company: data.company || "",
+        companyType: data.companyType || "tech",
         year: data.year || new Date().getFullYear(),
         type: data.type || "On-Campus",
         excerpt: data.excerpt || "",
@@ -100,6 +60,7 @@ export async function getExperiencesFromFirestore() {
         interviewProcess: data.interviewProcess || "",
         tips: data.tips || "",
         challenges: data.challenges || "",
+        resources: data.resources || [],
         role: data.role || "",
         submittedAt: data.submittedAt ? new Date(data.submittedAt.toDate()).toISOString() : new Date().toISOString(),
       })
@@ -109,12 +70,12 @@ export async function getExperiencesFromFirestore() {
     return experiences
   } catch (error) {
     console.error("Error getting experiences:", error)
-    // Return empty array instead of throwing error
     return []
   }
 }
 
-export async function getCompaniesFromFirestore() {
+// Function to get companies from Firestore
+export async function getCompaniesFromFirestore(): Promise<Company[]> {
   try {
     console.log("Fetching companies from Firestore")
     const companiesRef = collection(db, "companies")
@@ -124,7 +85,7 @@ export async function getCompaniesFromFirestore() {
     companiesSnapshot.forEach((doc) => {
       const data = doc.data()
       companies.push({
-        id: Number.parseInt(doc.id) || Date.now(),
+        id: data.id || Date.now(),
         name: data.name || "",
         logo: data.logo || "/placeholder.svg?height=80&width=80",
         category: data.category || "Tech",
@@ -136,11 +97,228 @@ export async function getCompaniesFromFirestore() {
     return companies
   } catch (error) {
     console.error("Error getting companies:", error)
-    // Return empty array instead of throwing error
     return []
   }
 }
 
+// Function to update an experience in Firestore
+export async function updateExperienceInFirestore(updatedExperience: Experience) {
+  try {
+    console.log("Updating experience in Firestore:", updatedExperience.id)
+    const experienceRef = doc(db, "experiences", updatedExperience.id.toString())
+    await updateDoc(experienceRef, updatedExperience)
+    console.log("Experience updated successfully")
+    return true
+  } catch (error) {
+    console.error("Error updating experience:", error)
+    return false
+  }
+}
+
+// Function to delete an experience from Firestore
+export async function deleteExperienceFromFirestore(id: number) {
+  try {
+    console.log("Deleting experience from Firestore:", id)
+    const experienceRef = doc(db, "experiences", id.toString())
+    await deleteDoc(experienceRef)
+    console.log("Experience deleted successfully")
+    return true
+  } catch (error) {
+    console.error("Error deleting experience:", error)
+    return false
+  }
+}
+
+// Function to check if a company exists in Firestore
+export async function companyExistsInFirestore(companyName: string): Promise<boolean> {
+  try {
+    const companyRef = doc(db, "companies", companyName)
+    const companySnap = await getDoc(companyRef)
+    return companySnap.exists()
+  } catch (error) {
+    console.error("Error checking if company exists:", error)
+    return false
+  }
+}
+
+// Function to get a company by name from Firestore
+export async function getCompanyByNameFromFirestore(companyName: string): Promise<Company | null> {
+  try {
+    const companyRef = doc(db, "companies", companyName)
+    const companySnap = await getDoc(companyRef)
+
+    if (companySnap.exists()) {
+      const data = companySnap.data()
+      return {
+        id: data.id || Date.now(),
+        name: data.name || "",
+        logo: data.logo || "/placeholder.svg?height=80&width=80",
+        category: data.category || "Tech",
+        studentsPlaced: data.studentsPlaced || 0,
+      }
+    } else {
+      return null
+    }
+  } catch (error) {
+    console.error("Error getting company by name:", error)
+    return null
+  }
+}
+
+// Change the function declaration to export it
+export async function addOrUpdateCompanyInFirestore(
+  companyName: string,
+  companyLogo = "/placeholder.svg?height=80&width=80",
+  companyType = "tech",
+) {
+  try {
+    const companyRef = doc(db, "companies", companyName)
+    const companySnap = await getDoc(companyRef)
+
+    if (companySnap.exists()) {
+      // Update the company if it exists
+      await updateDoc(companyRef, {
+        logo: companyLogo,
+        category: companyType,
+      })
+      console.log("Company updated successfully")
+    } else {
+      // Add the company if it doesn't exist
+      await setDoc(companyRef, {
+        name: companyName,
+        logo: companyLogo,
+        category: companyType,
+        studentsPlaced: 0, // Initialize studentsPlaced
+      })
+      console.log("Company added successfully")
+    }
+    return true
+  } catch (error) {
+    console.error("Error adding/updating company:", error)
+    return false
+  }
+}
+
+// Function to approve an experience in Firestore
+export async function approveExperienceInFirestore(id: number) {
+  try {
+    console.log("Approving experience in Firestore:", id)
+    const experienceRef = doc(db, "experiences", id.toString())
+    await updateDoc(experienceRef, {
+      status: "approved",
+    })
+    console.log("Experience approved successfully")
+    return true
+  } catch (error) {
+    console.error("Error approving experience:", error)
+    return false
+  }
+}
+
+// Function to reject an experience in Firestore
+export async function rejectExperienceInFirestore(id: number) {
+  try {
+    console.log("Rejecting experience in Firestore:", id)
+    const experienceRef = doc(db, "experiences", id.toString())
+    await updateDoc(experienceRef, {
+      status: "rejected",
+    })
+    console.log("Experience rejected successfully")
+    return true
+  } catch (error) {
+    console.error("Error rejecting experience:", error)
+    return false
+  }
+}
+
+// Function to get pending experiences from Firestore
+export async function getPendingExperiencesFromFirestore(): Promise<Experience[]> {
+  try {
+    console.log("Fetching pending experiences from Firestore")
+    const experiencesRef = collection(db, "experiences")
+    const q = query(experiencesRef, where("status", "==", "pending"))
+    const experiencesSnapshot = await getDocs(q)
+
+    const experiences: Experience[] = []
+    experiencesSnapshot.forEach((doc) => {
+      const data = doc.data()
+      experiences.push({
+        id: Number.parseInt(doc.id) || Date.now(),
+        studentName: data.studentName || "",
+        branch: data.branch || "",
+        company: data.company || "",
+        companyType: data.companyType || "tech",
+        year: data.year || new Date().getFullYear(),
+        type: data.type || "On-Campus",
+        excerpt: data.excerpt || "",
+        profileImage: data.profileImage || "/placeholder.svg?height=100&width=100",
+        companyLogo: data.companyLogo || "/placeholder.svg?height=40&width=40",
+        status: data.status || "pending",
+        linkedIn: data.linkedIn || "",
+        github: data.github || "",
+        personalEmail: data.personalEmail || "",
+        preparationStrategy: data.preparationStrategy || "",
+        interviewProcess: data.interviewProcess || "",
+        tips: data.tips || "",
+        challenges: data.challenges || "",
+        resources: data.resources || [],
+        role: data.role || "",
+        submittedAt: data.submittedAt ? new Date(data.submittedAt.toDate()).toISOString() : new Date().toISOString(),
+      })
+    })
+
+    console.log(`Retrieved ${experiences.length} pending experiences`)
+    return experiences
+  } catch (error) {
+    console.error("Error getting pending experiences:", error)
+    return []
+  }
+}
+
+// Function to login admin
+export async function loginAdmin(email: string, password: string): Promise<Admin | null> {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password)
+    const user = userCredential.user
+
+    // Fetch admin data from Firestore
+    const adminRef = doc(db, "admins", user.uid)
+    const adminSnap = await getDoc(adminRef)
+
+    if (adminSnap.exists()) {
+      const adminData = adminSnap.data()
+      return {
+        uid: user.uid,
+        email: user.email || "",
+        name: adminData.name || "Admin User",
+      }
+    } else {
+      console.warn("Admin data not found in Firestore for user:", user.email)
+      return {
+        uid: user.uid,
+        email: user.email || "",
+        name: "Admin User", // Provide a default name
+      }
+    }
+  } catch (error: any) {
+    console.error("Error logging in admin:", error)
+    throw error // Re-throw the error for the component to handle
+  }
+}
+
+// Function to logout admin
+export async function logoutAdmin() {
+  try {
+    await auth.signOut()
+    console.log("Admin logged out successfully")
+    return true
+  } catch (error) {
+    console.error("Error logging out admin:", error)
+    return false
+  }
+}
+
+// Update the saveExperienceToFirestore function to handle undefined companyType
 export async function saveExperienceToFirestore(experience: Experience) {
   try {
     console.log("Saving experience to Firestore:", experience.id)
@@ -155,7 +333,11 @@ export async function saveExperienceToFirestore(experience: Experience) {
     await setDoc(doc(db, "experiences", experience.id.toString()), experienceWithTimestamp)
 
     // Update company information
-    await addOrUpdateCompanyInFirestore(experience.company, experience.companyLogo)
+    await addOrUpdateCompanyInFirestore(
+      experience.company,
+      experience.companyLogo || "/placeholder.svg?height=40&width=40",
+      experience.companyType,
+    )
 
     console.log("Experience saved successfully")
     return true
@@ -168,231 +350,6 @@ export async function saveExperienceToFirestore(experience: Experience) {
     }
 
     throw error
-  }
-}
-
-export async function updateExperienceInFirestore(experience: Experience) {
-  try {
-    console.log("Updating experience in Firestore:", experience.id)
-    await updateDoc(doc(db, "experiences", experience.id.toString()), {
-      ...experience,
-      updatedAt: serverTimestamp(),
-    })
-    console.log("Experience updated successfully")
-    return true
-  } catch (error: any) {
-    console.error("Error updating experience:", error)
-
-    // Check if it's a permission error
-    if (error.code === "permission-denied") {
-      throw new Error("Permission denied: Please check your Firebase security rules.")
-    }
-
-    throw error
-  }
-}
-
-export async function deleteExperienceFromFirestore(id: number) {
-  try {
-    console.log("Deleting experience from Firestore:", id)
-    await deleteDoc(doc(db, "experiences", id.toString()))
-    console.log("Experience deleted successfully")
-    return true
-  } catch (error: any) {
-    console.error("Error deleting experience:", error)
-
-    // Check if it's a permission error
-    if (error.code === "permission-denied") {
-      throw new Error("Permission denied: Please check your Firebase security rules.")
-    }
-
-    throw error
-  }
-}
-
-export async function companyExistsInFirestore(companyName: string) {
-  try {
-    console.log("Checking if company exists in Firestore:", companyName)
-    const companiesRef = collection(db, "companies")
-    const q = query(companiesRef, where("name", "==", companyName))
-    const querySnapshot = await getDocs(q)
-    const exists = !querySnapshot.empty
-    console.log(`Company ${companyName} exists: ${exists}`)
-    return exists
-  } catch (error) {
-    console.error("Error checking if company exists:", error)
-    return false
-  }
-}
-
-export async function getCompanyByNameFromFirestore(companyName: string) {
-  try {
-    console.log("Getting company by name from Firestore:", companyName)
-    const companiesRef = collection(db, "companies")
-    const q = query(companiesRef, where("name", "==", companyName))
-    const querySnapshot = await getDocs(q)
-
-    if (querySnapshot.empty) {
-      console.log(`Company ${companyName} not found`)
-      return null
-    }
-
-    const doc = querySnapshot.docs[0]
-    const data = doc.data()
-
-    console.log(`Company ${companyName} found`)
-    return {
-      id: Number.parseInt(doc.id) || Date.now(),
-      name: data.name || "",
-      logo: data.logo || "/placeholder.svg?height=80&width=80",
-      category: data.category || "Tech",
-      studentsPlaced: data.studentsPlaced || 0,
-    }
-  } catch (error) {
-    console.error("Error getting company by name:", error)
-    return null
-  }
-}
-
-export async function addOrUpdateCompanyInFirestore(
-  companyName: string,
-  companyLogo = "/placeholder.svg?height=80&width=80",
-) {
-  try {
-    console.log("Adding or updating company in Firestore:", companyName)
-    const companiesRef = collection(db, "companies")
-    const q = query(companiesRef, where("name", "==", companyName))
-    const querySnapshot = await getDocs(q)
-
-    if (!querySnapshot.empty) {
-      // Update existing company
-      const docRef = querySnapshot.docs[0].ref
-      const currentData = querySnapshot.docs[0].data()
-
-      await updateDoc(docRef, {
-        studentsPlaced: (currentData.studentsPlaced || 0) + 1,
-        logo: companyLogo !== "/placeholder.svg" ? companyLogo : currentData.logo,
-        updatedAt: serverTimestamp(),
-      })
-      console.log(`Company ${companyName} updated`)
-    } else {
-      // Add new company
-      await addDoc(collection(db, "companies"), {
-        name: companyName,
-        logo: companyLogo,
-        studentsPlaced: 1,
-        createdAt: serverTimestamp(),
-      })
-      console.log(`Company ${companyName} added`)
-    }
-
-    return true
-  } catch (error: any) {
-    console.error("Error adding or updating company:", error)
-
-    // Check if it's a permission error
-    if (error.code === "permission-denied") {
-      throw new Error("Permission denied: Please check your Firebase security rules.")
-    }
-
-    return false
-  }
-}
-
-export async function approveExperienceInFirestore(id: number) {
-  try {
-    console.log("Approving experience in Firestore:", id)
-    const experienceRef = doc(db, "experiences", id.toString())
-    const experienceDoc = await getDoc(experienceRef)
-
-    if (!experienceDoc.exists()) {
-      console.error(`Experience ${id} not found`)
-      throw new Error("Experience not found")
-    }
-
-    const experienceData = experienceDoc.data()
-
-    await updateDoc(experienceRef, {
-      status: "approved",
-      updatedAt: serverTimestamp(),
-    })
-
-    // Update company information when experience is approved
-    await addOrUpdateCompanyInFirestore(experienceData.company, experienceData.companyLogo)
-
-    console.log(`Experience ${id} approved`)
-    return true
-  } catch (error: any) {
-    console.error("Error approving experience:", error)
-
-    // Check if it's a permission error
-    if (error.code === "permission-denied") {
-      throw new Error("Permission denied: Please check your Firebase security rules.")
-    }
-
-    throw error
-  }
-}
-
-export async function rejectExperienceInFirestore(id: number) {
-  try {
-    console.log("Rejecting experience in Firestore:", id)
-    await updateDoc(doc(db, "experiences", id.toString()), {
-      status: "rejected",
-      updatedAt: serverTimestamp(),
-    })
-    console.log(`Experience ${id} rejected`)
-    return true
-  } catch (error: any) {
-    console.error("Error rejecting experience:", error)
-
-    // Check if it's a permission error
-    if (error.code === "permission-denied") {
-      throw new Error("Permission denied: Please check your Firebase security rules.")
-    }
-
-    throw error
-  }
-}
-
-export async function getPendingExperiencesFromFirestore() {
-  try {
-    console.log("Fetching pending experiences from Firestore")
-    const experiencesRef = collection(db, "experiences")
-    const q = query(experiencesRef, where("status", "==", "pending"))
-    const querySnapshot = await getDocs(q)
-
-    const pendingExperiences: Experience[] = []
-    querySnapshot.forEach((doc) => {
-      const data = doc.data()
-      pendingExperiences.push({
-        id: Number.parseInt(doc.id) || Date.now(),
-        studentName: data.studentName || "",
-        branch: data.branch || "",
-        company: data.company || "",
-        year: data.year || new Date().getFullYear(),
-        type: data.type || "On-Campus",
-        excerpt: data.excerpt || "",
-        profileImage: data.profileImage || "/placeholder.svg?height=100&width=100",
-        companyLogo: data.companyLogo || "/placeholder.svg?height=40&width=40",
-        status: data.status || "pending",
-        linkedIn: data.linkedIn || "",
-        github: data.github || "",
-        personalEmail: data.personalEmail || "",
-        preparationStrategy: data.preparationStrategy || "",
-        interviewProcess: data.interviewProcess || "",
-        tips: data.tips || "",
-        challenges: data.challenges || "",
-        role: data.role || "",
-        submittedAt: data.submittedAt ? new Date(data.submittedAt.toDate()).toISOString() : new Date().toISOString(),
-      })
-    })
-
-    console.log(`Retrieved ${pendingExperiences.length} pending experiences`)
-    return pendingExperiences
-  } catch (error) {
-    console.error("Error getting pending experiences:", error)
-    return []
   }
 }
 

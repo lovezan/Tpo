@@ -3,9 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import Image from "next/image"
-import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Users } from "lucide-react"
 import { getCompanies } from "@/lib/data-utils"
 import { toast } from "@/hooks/use-toast"
@@ -40,31 +38,19 @@ export default function CompanyList() {
     fetchCompanies()
   }, [])
 
-  // Apply filters when search params change
+  // Update the useEffect for filtering to only filter by search query
   useEffect(() => {
     if (isLoading || companies.length === 0) return
 
     // Get search parameters
     const query = searchParams?.get("query")?.toLowerCase() || ""
-    const category = searchParams?.get("category")?.toLowerCase() || ""
 
     // Apply filters
     let filtered = [...companies]
 
     // Filter by search query
     if (query) {
-      filtered = filtered.filter(
-        (company) =>
-          company.name.toLowerCase().includes(query) ||
-          (company.category && company.category.toLowerCase().includes(query)),
-      )
-    }
-
-    // Filter by category
-    if (category && category !== "all") {
-      filtered = filtered.filter(
-        (company) => company.category && company.category.toLowerCase().replace(/\s+/g, "-") === category,
-      )
+      filtered = filtered.filter((company) => company.name.toLowerCase().includes(query))
     }
 
     // Update displayed companies
@@ -84,37 +70,33 @@ export default function CompanyList() {
     )
   }
 
+  // Update the company card rendering to remove Link wrapper and keep cards non-clickable
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {displayedCompanies.map((company) => (
-        <Link href={`/companies/${company.id}`} key={company.id}>
-          <Card className="flex flex-col h-full hover:shadow-md transition-shadow">
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-4">
-                <Image
-                  src={company.logo || "/placeholder.svg?height=60&width=60"}
-                  alt={`${company.name} logo`}
-                  width={60}
-                  height={60}
-                  className="rounded-md"
-                />
-                <div>
-                  <CardTitle className="text-xl">{company.name}</CardTitle>
-                  <Badge variant="outline" className="mt-1">
-                    {company.category || "Tech"}
-                  </Badge>
-                </div>
+        <Card key={company.id} className="flex flex-col h-full">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-4">
+              <Image
+                src={company.logo || "/placeholder.svg?height=60&width=60"}
+                alt={`${company.name} logo`}
+                width={60}
+                height={60}
+                className="rounded-md"
+              />
+              <div>
+                <CardTitle className="text-xl">{company.name}</CardTitle>
               </div>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <div className="flex items-center gap-2 text-sm mt-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Students Placed:</span>
-                <span className="font-medium">{company.studentsPlaced}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="flex-1">
+            <div className="flex items-center gap-2 text-sm mt-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">Experiences Shared:</span>
+              <span className="font-medium">{company.experiencesCount || 0}</span>
+            </div>
+          </CardContent>
+        </Card>
       ))}
     </div>
   )

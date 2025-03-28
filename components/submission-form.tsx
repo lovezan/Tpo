@@ -14,10 +14,45 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "@/hooks/use-toast"
-import { AlertCircle, CheckCircle2, Upload, Search } from "lucide-react"
+import { AlertCircle, CheckCircle2, Upload, Search, User, Building, FileText, Link } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { saveExperienceToFirestore } from "@/lib/firebase"
 import { getCompaniesFromFirestore } from "@/lib/firebase"
+
+// Add this after other imports
+import { PlusCircle, Trash2 } from "lucide-react"
+
+// Add this hook implementation at the top of the file, after the other imports:
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false)
+
+  useEffect(() => {
+    // Default to false on server
+    if (typeof window !== "undefined") {
+      const mediaQuery = window.matchMedia(query)
+
+      // Set initial value
+      setMatches(mediaQuery.matches)
+
+      // Create event listener function
+      const handleChange = (event: MediaQueryListEvent) => {
+        setMatches(event.matches)
+      }
+
+      // Add event listener
+      mediaQuery.addEventListener("change", handleChange)
+
+      // Clean up
+      return () => {
+        mediaQuery.removeEventListener("change", handleChange)
+      }
+    }
+
+    return undefined
+  }, [query])
+
+  return matches
+}
 
 // Function to generate year options from 1986 to current year + 2
 function generateYearOptions() {
@@ -97,9 +132,17 @@ const formSchema = z.object({
   interviewProcess: z.string().min(50, { message: "Please provide more details about the interview process." }),
   tips: z.string().min(50, { message: "Please provide more tips for future candidates." }),
   challenges: z.string().min(50, { message: "Please share the challenges you faced." }),
+  resources: z
+    .array(
+      z.object({
+        title: z.string().min(1, { message: "Resource title is required" }),
+        url: z.string().url({ message: "Please enter a valid URL" }),
+      }),
+    )
+    .optional(),
   linkedIn: z.string().optional(),
   github: z.string().optional(),
-  personalEmail: z.string().email().optional(),
+  personalEmail: z.string().optional(),
   profilePicture: z.any().optional(),
   companyLogo: z.any().optional(),
   termsAccepted: z.boolean().refine((val) => val === true, { message: "You must accept the terms and conditions." }),
@@ -111,6 +154,10 @@ export default function SubmissionForm() {
   const [activeTab, setActiveTab] = useState("personal")
   const [companies, setCompanies] = useState<string[]>([])
   const yearOptions = generateYearOptions()
+  const isMobile = useMediaQuery("(max-width: 640px)")
+
+  // Add this inside the SubmissionForm component
+  const [resources, setResources] = useState([{ title: "", url: "" }])
 
   // Get existing companies for autocomplete
   useEffect(() => {
@@ -134,6 +181,7 @@ export default function SubmissionForm() {
     fetchCompanies()
   }, [])
 
+  // Update the form defaultValues to include resources
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -151,12 +199,27 @@ export default function SubmissionForm() {
       interviewProcess: "",
       tips: "",
       challenges: "",
+      resources: [{ title: "", url: "" }],
       linkedIn: "",
       github: "",
       personalEmail: "",
       termsAccepted: false,
     },
   })
+
+  // Add these functions inside the SubmissionForm component
+  const addResource = () => {
+    const currentResources = form.getValues("resources") || []
+    form.setValue("resources", [...currentResources, { title: "", url: "" }])
+  }
+
+  const removeResource = (index: number) => {
+    const currentResources = form.getValues("resources") || []
+    if (currentResources.length > 1) {
+      const updatedResources = currentResources.filter((_, i) => i !== index)
+      form.setValue("resources", updatedResources)
+    }
+  }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (isSubmitting) return // Prevent multiple submissions
@@ -174,7 +237,7 @@ export default function SubmissionForm() {
         studentName: values.name,
         branch: getBranchName(values.branch),
         company: values.company,
-        companyType: values.companyType, // Add company type
+        companyType: values.companyType,
         year: Number.parseInt(values.placementYear),
         type: getPlacementTypeName(values.placementType),
         excerpt,
@@ -189,6 +252,7 @@ export default function SubmissionForm() {
         interviewProcess: values.interviewProcess,
         tips: values.tips,
         challenges: values.challenges,
+        resources: values.resources || [],
         linkedIn: values.linkedIn || "",
         github: values.github || "",
         personalEmail: values.personalEmail || "",
@@ -309,6 +373,53 @@ export default function SubmissionForm() {
     }
   }
 
+  // Get tab icon based on tab name
+  const getTabIcon = (tabName: string) => {
+    switch (tabName) {
+      case "personal":
+        return <User className="h-4 w-4 mr-1" />
+      case "placement":
+        return <Building className="h-4 w-4 mr-1" />
+      case "experience":
+        return <FileText className="h-4 w-4 mr-1" />
+      case "connect":
+        return <Link className="h-4 w-4 mr-1" />
+      default:
+        return null
+    }
+  }
+
+  // Get tab label based on tab name and screen size
+  const getTabLabel = (tabName: string) => {
+    if (isMobile) {
+      switch (tabName) {
+        case "personal":
+          return "Personal"
+        case "placement":
+          return "Placement"
+        case "experience":
+          return "Experience"
+        case "connect":
+          return "Connect"
+        default:
+          return tabName
+      }
+    } else {
+      switch (tabName) {
+        case "personal":
+          return "Personal Info"
+        case "placement":
+          return "Placement Details"
+        case "experience":
+          return "Your Experience"
+        case "connect":
+          return "Connect Info"
+        default:
+          return tabName
+      }
+    }
+  }
+
   if (isSubmitted) {
     return (
       <Card>
@@ -338,23 +449,36 @@ export default function SubmissionForm() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Placement Experience Form</CardTitle>
-        <CardDescription>Share your placement journey to help juniors prepare better</CardDescription>
+    <Card className="w-full max-w-4xl mx-auto">
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl font-bold">Share Your Placement Experience</CardTitle>
+        <CardDescription>Help juniors prepare better by sharing your journey</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="personal">Personal Info</TabsTrigger>
-                <TabsTrigger value="placement">Placement Details</TabsTrigger>
-                <TabsTrigger value="experience">Your Experience</TabsTrigger>
-                <TabsTrigger value="connect">Connect Info</TabsTrigger>
-              </TabsList>
+              <div className="relative mb-6">
+                <TabsList className="w-full grid grid-cols-4 p-1 h-auto">
+                  {["personal", "placement", "experience", "connect"].map((tab) => (
+                    <TabsTrigger
+                      key={tab}
+                      value={tab}
+                      className={`
+                        flex items-center justify-center py-3 px-1 
+                        data-[state=active]:shadow-none data-[state=active]:font-medium
+                        ${activeTab === tab ? "border-b-2 border-primary rounded-none" : ""}
+                      `}
+                    >
+                      {getTabIcon(tab)}
+                      <span className="text-xs sm:text-sm whitespace-nowrap">{getTabLabel(tab)}</span>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-border"></div>
+              </div>
 
-              <TabsContent value="personal" className="space-y-6 pt-4">
+              <TabsContent value="personal" className="space-y-6 pt-2">
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>Important</AlertTitle>
@@ -456,13 +580,13 @@ export default function SubmissionForm() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button type="button" onClick={goToNextTab}>
+                  <Button type="button" onClick={goToNextTab} className="w-full sm:w-auto">
                     Next: Placement Details
                   </Button>
                 </div>
               </TabsContent>
 
-              <TabsContent value="placement" className="space-y-6 pt-4">
+              <TabsContent value="placement" className="space-y-6 pt-2">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <FormField
                     control={form.control}
@@ -593,17 +717,17 @@ export default function SubmissionForm() {
                   <Input id="companyLogo" type="file" accept="image/*" />
                 </div>
 
-                <div className="flex justify-between">
-                  <Button type="button" variant="outline" onClick={goToPreviousTab}>
+                <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
+                  <Button type="button" variant="outline" onClick={goToPreviousTab} className="w-full sm:w-auto">
                     Back: Personal Info
                   </Button>
-                  <Button type="button" onClick={goToNextTab}>
+                  <Button type="button" onClick={goToNextTab} className="w-full sm:w-auto">
                     Next: Your Experience
                   </Button>
                 </div>
               </TabsContent>
 
-              <TabsContent value="experience" className="space-y-6 pt-4">
+              <TabsContent value="experience" className="space-y-6 pt-2">
                 <FormField
                   control={form.control}
                   name="preparationStrategy"
@@ -682,17 +806,88 @@ export default function SubmissionForm() {
                   )}
                 />
 
-                <div className="flex justify-between">
-                  <Button type="button" variant="outline" onClick={goToPreviousTab}>
+                {/* Add this after the challenges FormField in the experience TabsContent */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Resources (Optional)</h3>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addResource}
+                      className="flex items-center gap-1"
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                      <span>Add Resource</span>
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {form.watch("resources")?.map((_, index) => (
+                      <div key={index} className="flex flex-col sm:flex-row gap-3 items-start">
+                        <div className="flex-1 space-y-2">
+                          <FormField
+                            control={form.control}
+                            name={`resources.${index}.title`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className={index !== 0 ? "sr-only" : ""}>Resource Title</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="e.g., DSA Course, Interview Prep Guide" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="flex-1 space-y-2">
+                          <FormField
+                            control={form.control}
+                            name={`resources.${index}.url`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className={index !== 0 ? "sr-only" : ""}>Resource URL</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="https://example.com/resource" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeResource(index)}
+                          className="mt-8 shrink-0"
+                          disabled={form.watch("resources")?.length === 1}
+                        >
+                          <Trash2 className="h-4 w-4 text-muted-foreground" />
+                          <span className="sr-only">Remove resource</span>
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="text-sm text-muted-foreground">
+                    Add links to helpful resources you used during your preparation (courses, books, websites, etc.)
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
+                  <Button type="button" variant="outline" onClick={goToPreviousTab} className="w-full sm:w-auto">
                     Back: Placement Details
                   </Button>
-                  <Button type="button" onClick={goToNextTab}>
+                  <Button type="button" onClick={goToNextTab} className="w-full sm:w-auto">
                     Next: Connect Info
                   </Button>
                 </div>
               </TabsContent>
 
-              <TabsContent value="connect" className="space-y-6 pt-4">
+              <TabsContent value="connect" className="space-y-6 pt-2">
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>Optional Information</AlertTitle>
@@ -766,11 +961,11 @@ export default function SubmissionForm() {
                   )}
                 />
 
-                <div className="flex justify-between">
-                  <Button type="button" variant="outline" onClick={goToPreviousTab}>
+                <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
+                  <Button type="button" variant="outline" onClick={goToPreviousTab} className="w-full sm:w-auto">
                     Back: Your Experience
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
+                  <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
                     {isSubmitting ? "Submitting..." : "Submit Experience"}
                   </Button>
                 </div>

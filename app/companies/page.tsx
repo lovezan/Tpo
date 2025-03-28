@@ -13,9 +13,7 @@ export default function CompaniesPage() {
       <div className="flex flex-col gap-6">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Companies</h1>
-          <p className="text-muted-foreground">
-            Explore companies that recruit from NIT Hamirpur and see how many students work there
-          </p>
+          <p className="text-muted-foreground">Search and explore companies that recruit from NIT Hamirpur</p>
         </div>
 
         <CompanySearch />
