@@ -154,3 +154,54 @@
   color: hsl(var(--gold));
 }
 
+/* Add these styles at the end of the file */
+
+/* Custom styling for input elements in nith-theme */
+.nith-theme input:not([type="checkbox"]):not([type="radio"]),
+.nith-theme textarea,
+.nith-theme select,
+.nith-theme .select-trigger,
+.nith-theme .input {
+  border-color: hsl(0, 59%, 60%); /* Light brown border by default */
+  transition: border-color 0.2s ease-in-out;
+}
+
+.nith-theme input:not([type="checkbox"]):not([type="radio"]):hover,
+.nith-theme textarea:hover,
+.nith-theme select:hover,
+.nith-theme .select-trigger:hover,
+.nith-theme .input:hover {
+  border-color: hsl(0, 59%, 60%); /* Same light brown on hover */
+}
+
+.nith-theme input:not([type="checkbox"]):not([type="radio"]):focus,
+.nith-theme textarea:focus,
+.nith-theme select:focus,
+.nith-theme .select-trigger:focus,
+.nith-theme .input:focus,
+.nith-theme input:not([type="checkbox"]):not([type="radio"]):focus-visible,
+.nith-theme textarea:focus-visible,
+.nith-theme select:focus-visible,
+.nith-theme .select-trigger:focus-visible,
+.nith-theme .input:focus-visible,
+.nith-theme [data-state="open"] .select-trigger {
+  border-color: hsl(0, 100%, 30%); /* Darker brown border when focused */
+  outline-color: hsl(0, 100%, 30%, 0.5); /* Darker brown outline */
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px hsl(0, 100%, 30%, 0.1); /* Subtle shadow for focus state */
+}
+
+/* Style for the shadcn components that use the Ring */
+.nith-theme .ring-offset-background {
+  --ring-color: hsl(0, 100%, 30%);
+}
+
+/* Style for form controls */
+.nith-theme .form-control {
+  border-color: hsl(0, 59%, 60%);
+}
+
+.nith-theme .form-control:focus {
+  border-color: hsl(0, 100%, 30%);
+}
+

@@ -17,7 +17,7 @@ export type Experience = {
   studentName: string
   branch: string
   company: string
-  companyType?: string // Add company type field
+  companyType?: string
   year: number
   type: string
   excerpt: string
@@ -31,6 +31,7 @@ export type Experience = {
   interviewProcess?: string
   tips?: string
   challenges?: string
+  resources?: Array<{ title: string; url: string }>
   role?: string
   submittedAt?: string
 }
