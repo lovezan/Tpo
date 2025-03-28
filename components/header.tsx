@@ -46,50 +46,56 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header
+      className="sticky top-0 z-50 w-full border-b backdrop-blur-md supports-[backdrop-filter]:bg-transparent"
+      style={{ backgroundColor: "hsl(var(--header-background))" }}
+    >
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/apple-touch-icon.png"
+              src="/nith.png"
               alt="NIT Hamirpur Logo"
               width={40}
               height={40}
               className="rounded-md"
             />
-            <span className="hidden font-bold sm:inline-block">NIT Hamirpur Placement Diaries</span>
+            <div className="flex flex-col">
+              <span className="hidden font-bold sm:inline-block text-foreground dark:text-white nith-theme:text-white">
+                NITH Placement Portal
+              </span>
+              <div className="hidden sm:inline-flex items-center">
+                <span className="text-[10px] font-medium text-green-700 dark:text-green-400 nith-theme:text-gold">
+                  Official NITH Affiliated
+                </span>
+              </div>
+            </div>
           </Link>
         </div>
 
         <nav className="hidden md:flex items-center gap-6">
           <Link
             href="/"
-            className={`text-sm font-medium transition-colors hover:text-primary ${pathname === "/" ? "text-primary" : ""}`}
+            className={`text-sm font-medium transition-colors hover:text-primary dark:hover:text-primary nith-theme:text-white nith-theme:hover:text-gold ${pathname === "/" ? "text-primary dark:text-primary nith-theme:text-gold" : ""}`}
           >
             Home
           </Link>
           <Link
             href="/experiences"
-            className={`text-sm font-medium transition-colors hover:text-primary ${pathname.startsWith("/experiences") ? "text-primary" : ""}`}
+            className={`text-sm font-medium transition-colors hover:text-primary dark:hover:text-primary nith-theme:text-white nith-theme:hover:text-gold ${pathname.startsWith("/experiences") ? "text-primary dark:text-primary nith-theme:text-gold" : ""}`}
           >
             Experiences
           </Link>
           <Link
             href="/companies"
-            className={`text-sm font-medium transition-colors hover:text-primary ${pathname.startsWith("/companies") ? "text-primary" : ""}`}
+            className={`text-sm font-medium transition-colors hover:text-primary dark:hover:text-primary nith-theme:text-white nith-theme:hover:text-gold ${pathname.startsWith("/companies") ? "text-primary dark:text-primary nith-theme:text-gold" : ""}`}
           >
             Companies
-          </Link>
-          <Link
-            href="/submit"
-            className={`text-sm font-medium transition-colors hover:text-primary ${pathname === "/submit" ? "text-primary" : ""}`}
-          >
-            Share Your Story
           </Link>
           {isAdmin && (
             <Link
               href="/admin"
-              className={`text-sm font-medium transition-colors hover:text-primary ${pathname.startsWith("/admin") ? "text-primary" : ""}`}
+              className={`text-sm font-medium transition-colors hover:text-primary dark:hover:text-primary nith-theme:text-white nith-theme:hover:text-gold ${pathname.startsWith("/admin") ? "text-primary dark:text-primary nith-theme:text-gold" : ""}`}
             >
               Admin
             </Link>
@@ -100,14 +106,24 @@ export default function Header() {
           <ModeToggle />
 
           {!isAdmin ? (
-            <Button asChild variant="outline" size="icon" className="hidden md:flex">
+            <Button
+              asChild
+              variant="outline"
+              size="icon"
+              className="hidden md:flex nith-theme:border-white nith-theme:text-white nith-theme:bg-transparent"
+            >
               <Link href="/admin/login">
                 <User className="h-5 w-5" />
                 <span className="sr-only">Admin Login</span>
               </Link>
             </Button>
           ) : (
-            <Button variant="outline" size="sm" className="hidden md:flex" onClick={handleLogout}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden md:flex nith-theme:border-white nith-theme:text-white nith-theme:bg-transparent"
+              onClick={handleLogout}
+            >
               Logout
             </Button>
           )}
@@ -118,7 +134,11 @@ export default function Header() {
 
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="md:hidden">
+              <Button
+                variant="outline"
+                size="icon"
+                className="md:hidden nith-theme:border-white nith-theme:text-white nith-theme:bg-transparent"
+              >
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
@@ -134,9 +154,7 @@ export default function Header() {
                 <Link href="/companies" className="text-sm font-medium transition-colors hover:text-primary">
                   Companies
                 </Link>
-                <Link href="/submit" className="text-sm font-medium transition-colors hover:text-primary">
-                  Share Your Story
-                </Link>
+                
                 {isAdmin && (
                   <Link href="/admin" className="text-sm font-medium transition-colors hover:text-primary">
                     Admin
@@ -151,9 +169,6 @@ export default function Header() {
                     Logout
                   </Button>
                 )}
-                <Button asChild className="mt-4">
-                  <Link href="/submit">Submit Experience</Link>
-                </Button>
               </nav>
             </SheetContent>
           </Sheet>

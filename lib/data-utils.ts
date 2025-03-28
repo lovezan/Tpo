@@ -36,11 +36,28 @@ export type Admin = {
 export async function getExperiences(): Promise<Experience[]> {
   try {
     const experiences = await getExperiencesFromFirestore()
-    return experiences.length > 0 ? experiences : getMockExperiences()
+
+    // Check if user is admin
+    const isAdmin = checkIfUserIsAdmin()
+
+    // If user is admin, return all experiences, otherwise filter to show only approved ones
+    if (isAdmin) {
+      return experiences.length > 0 ? experiences : getMockExperiences()
+    } else {
+      const approvedExperiences = experiences.filter((exp) => exp.status === "approved")
+      return approvedExperiences.length > 0
+        ? approvedExperiences
+        : getMockExperiences().filter((exp) => exp.status === "approved")
+    }
   } catch (error) {
     console.error("Error getting experiences:", error)
-    // Return mock data if Firebase fails
-    return getMockExperiences()
+    // Return mock data if Firebase fails, but only approved experiences for non-admin users
+    const isAdmin = checkIfUserIsAdmin()
+    if (isAdmin) {
+      return getMockExperiences()
+    } else {
+      return getMockExperiences().filter((exp) => exp.status === "approved")
+    }
   }
 }
 
@@ -208,6 +225,86 @@ export async function rejectExperience(id: number) {
   }
 }
 
+// Function to get placement stats
+export async function getPlacementStats(): Promise<{
+  totalExperiences: number
+  totalCompanies: number
+  jobProfiles: number
+  highestPackage: string
+}> {
+  try {
+    // Get experiences and companies from Firestore
+    const experiences = await getExperiences()
+    const companies = await getCompanies()
+
+    // Calculate stats
+    const totalExperiences = experiences.length
+    const totalCompanies = companies.length
+
+    // Get unique job profiles
+    const uniqueRoles = new Set<string>()
+    experiences.forEach((exp) => {
+      if (exp.role) uniqueRoles.add(exp.role)
+    })
+    const jobProfiles = uniqueRoles.size
+
+    // Find highest package
+    let highestPackage = "₹0 LPA"
+    experiences.forEach((exp) => {
+      if (exp.package) {
+        // Extract numeric value from package string (e.g., "₹45 LPA" -> 45)
+        const packageValue = Number.parseFloat(exp.package.replace(/[^\d.]/g, ""))
+        const currentHighest = Number.parseFloat(highestPackage.replace(/[^\d.]/g, ""))
+
+        if (packageValue > currentHighest) {
+          highestPackage = exp.package
+        }
+      }
+    })
+
+    return {
+      totalExperiences,
+      totalCompanies,
+      jobProfiles: jobProfiles || 50, // Fallback to 50 if no roles found
+      highestPackage: highestPackage || "₹45 LPA", // Fallback to ₹45 LPA if no packages found
+    }
+  } catch (error) {
+    console.error("Error getting placement stats:", error)
+    // Return default values if there's an error
+    return {
+      totalExperiences: 500,
+      totalCompanies: 120,
+      jobProfiles: 50,
+      highestPackage: "₹45 LPA",
+    }
+  }
+}
+
+// Function to get featured experiences
+export async function getFeaturedExperiences(limit = 3): Promise<Experience[]> {
+  try {
+    // Get all experiences
+    const allExperiences = await getExperiences()
+
+    // Filter for approved experiences only
+    const approvedExperiences = allExperiences.filter((exp) => exp.status === "approved")
+
+    // Sort by submission date (newest first)
+    const sortedExperiences = approvedExperiences.sort((a, b) => {
+      const dateA = a.submittedAt ? new Date(a.submittedAt).getTime() : 0
+      const dateB = b.submittedAt ? new Date(b.submittedAt).getTime() : 0
+      return dateB - dateA
+    })
+
+    // Return the top experiences based on limit
+    return sortedExperiences.slice(0, limit)
+  } catch (error) {
+    console.error("Error getting featured experiences:", error)
+    // Return mock data if there's an error
+    return getMockExperiences().slice(0, limit)
+  }
+}
+
 // Mock data functions for fallback
 function getMockExperiences(): Experience[] {
   return [
@@ -262,5 +359,16 @@ function getMockCompanies(): Company[] {
     { id: 2, name: "Google", logo: "/placeholder.svg?height=80&width=80", studentsPlaced: 15 },
     { id: 3, name: "Amazon", logo: "/placeholder.svg?height=80&width=80", studentsPlaced: 18 },
   ]
+}
+
+// Helper function to check if current user is admin
+function checkIfUserIsAdmin(): boolean {
+  try {
+    const adminData = localStorage.getItem("currentAdmin")
+    return !!adminData
+  } catch (error) {
+    console.error("Error checking admin status:", error)
+    return false
+  }
 }
 

@@ -120,7 +120,7 @@ export default function ExperienceFilter() {
 
   return (
     <div className="flex flex-col gap-4">
-      <form className="flex flex-col sm:flex-row gap-4" onSubmit={handleSearch}>
+      <form className="flex flex-col sm:flex-row gap-3 sm:gap-4" onSubmit={handleSearch}>
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -140,7 +140,7 @@ export default function ExperienceFilter() {
               // Don't call handleBranchFilter here to avoid double updates
             }}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[140px] sm:w-[180px]">
               <SelectValue placeholder="Branch" />
             </SelectTrigger>
             <SelectContent>
@@ -242,11 +242,11 @@ export default function ExperienceFilter() {
         </div>
       </form>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1 sm:gap-2">
         <Button
           variant={selectedBranch === "all" ? "secondary" : "outline"}
           size="sm"
-          className="rounded-full"
+          className="rounded-full text-xs h-7 sm:h-9 px-2 sm:px-3"
           onClick={() => handleBranchFilter("all")}
         >
           All
@@ -254,7 +254,7 @@ export default function ExperienceFilter() {
         <Button
           variant={selectedBranch === "computer-science" ? "secondary" : "outline"}
           size="sm"
-          className="rounded-full"
+          className="rounded-full text-xs h-7 sm:h-9 px-2 sm:px-3"
           onClick={() => handleBranchFilter("computer-science")}
         >
           Computer Science
@@ -262,7 +262,7 @@ export default function ExperienceFilter() {
         <Button
           variant={selectedBranch === "electronics" ? "secondary" : "outline"}
           size="sm"
-          className="rounded-full"
+          className="rounded-full text-xs h-7 sm:h-9 px-2 sm:px-3"
           onClick={() => handleBranchFilter("electronics")}
         >
           Electronics
@@ -270,7 +270,7 @@ export default function ExperienceFilter() {
         <Button
           variant={selectedBranch === "mechanical" ? "secondary" : "outline"}
           size="sm"
-          className="rounded-full"
+          className="rounded-full text-xs h-7 sm:h-9 px-2 sm:px-3"
           onClick={() => handleBranchFilter("mechanical")}
         >
           Mechanical
@@ -278,7 +278,7 @@ export default function ExperienceFilter() {
         <Button
           variant={selectedType === "on-campus" ? "secondary" : "outline"}
           size="sm"
-          className="rounded-full"
+          className="rounded-full text-xs h-7 sm:h-9 px-2 sm:px-3"
           onClick={() => handleTypeFilter("on-campus")}
         >
           On-Campus
@@ -286,7 +286,7 @@ export default function ExperienceFilter() {
         <Button
           variant={selectedType === "off-campus" ? "secondary" : "outline"}
           size="sm"
-          className="rounded-full"
+          className="rounded-full text-xs h-7 sm:h-9 px-2 sm:px-3"
           onClick={() => handleTypeFilter("off-campus")}
         >
           Off-Campus

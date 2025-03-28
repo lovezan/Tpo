@@ -37,7 +37,7 @@ export default function AboutPage() {
           </div>
           <div className="flex justify-center">
             <Image
-              src="/placeholder.svg?height=300&width=400"
+              src="/nith1.webp"
               alt="NIT Hamirpur Campus"
               width={400}
               height={300}

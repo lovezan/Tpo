@@ -66,7 +66,18 @@ export async function getExperiencesFromFirestore() {
   try {
     console.log("Fetching experiences from Firestore")
     const experiencesRef = collection(db, "experiences")
-    const experiencesSnapshot = await getDocs(experiencesRef)
+
+    // Check if user is admin
+    const isAdmin = !!localStorage.getItem("currentAdmin")
+
+    // If not admin, only query for approved experiences
+    let experiencesSnapshot
+    if (!isAdmin) {
+      const q = query(experiencesRef, where("status", "==", "approved"))
+      experiencesSnapshot = await getDocs(q)
+    } else {
+      experiencesSnapshot = await getDocs(experiencesRef)
+    }
 
     const experiences: Experience[] = []
     experiencesSnapshot.forEach((doc) => {

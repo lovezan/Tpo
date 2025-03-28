@@ -9,11 +9,11 @@ export const metadata: Metadata = {
 
 export default function ExperiencesPage() {
   return (
-    <div className="container px-4 md:px-6 py-8 md:py-12">
-      <div className="flex flex-col gap-6">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Placement Experiences</h1>
-          <p className="text-muted-foreground">
+    <div className="container px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-12">
+      <div className="flex flex-col gap-4 sm:gap-6">
+        <div className="space-y-1 sm:space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Placement Experiences</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Browse through the placement experiences shared by NIT Hamirpur alumni
           </p>
         </div>

@@ -26,6 +26,7 @@
     --radius: 0.5rem;
     --success: 142.1 76.2% 36.3%;
     --success-foreground: 355.7 100% 97.3%;
+    --header-background: 0 0% 100% / 70%;
   }
 
   .dark {
@@ -50,6 +51,37 @@
     --ring: 224.3 76.3% 48%;
     --success: 142.1 70.6% 45.3%;
     --success-foreground: 144.9 80.4% 10%;
+    --header-background: 222.2 84% 4.9% / 70%;
+  }
+
+  .nith-theme {
+    --background: 51 89% 84%;
+    --foreground: 0 0% 0%;
+    --card: 51 89% 84%;
+    --card-foreground: 0 0% 0%;
+    --popover: 51 89% 84%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 0 100% 20%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 59% 41%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 51 75% 84%;
+    --muted-foreground: 0 0% 20%;
+    --accent: 51 75% 84%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 0 59% 41%;
+    --input: 51 75% 84%;
+    --ring: 0 100% 20%;
+    --radius: 0.5rem;
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
+    --tertiary: 0 100% 30%;
+    --tertiary-foreground: 0 0% 100%;
+    --gold: 51 100% 50%;
+    --gold-foreground: 0 0% 0%;
+    --header-background: 0 100% 20% / 60%;
   }
 }
 
@@ -60,6 +92,14 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Update the header styling for NITH theme to increase blur */
+.nith-theme header {
+  background-color: hsl(var(--header-background));
+  border-bottom-color: hsl(var(--secondary));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .prose h2 {
@@ -93,5 +133,24 @@
 
 .prose strong {
   @apply font-semibold;
+}
+
+/* Official badge styling */
+.official-badge {
+  background-color: rgba(var(--gold), 0.2);
+  border-color: hsl(var(--gold));
+  color: hsl(var(--gold));
+}
+
+.dark .official-badge {
+  background-color: rgba(var(--primary), 0.2);
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary));
+}
+
+.nith-theme .official-badge {
+  background-color: rgba(var(--gold), 0.2);
+  border-color: hsl(var(--gold));
+  color: hsl(var(--gold));
 }
 

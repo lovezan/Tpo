@@ -14,10 +14,70 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "@/hooks/use-toast"
-import { AlertCircle, CheckCircle2, Upload } from "lucide-react"
+import { AlertCircle, CheckCircle2, Upload, Search } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { saveExperienceToFirestore } from "@/lib/firebase"
 import { getCompaniesFromFirestore } from "@/lib/firebase"
+
+// Function to generate year options from 1986 to current year + 2
+function generateYearOptions() {
+  const currentYear = new Date().getFullYear()
+  const startYear = 1986 // NIT Hamirpur established
+  const endYear = currentYear + 2 // Include upcoming years
+
+  const years = []
+  for (let year = endYear; year >= startYear; year--) {
+    years.push(year)
+  }
+
+  return years
+}
+
+// Custom Select component with search functionality
+function SearchableYearSelect({
+  years,
+  value,
+  onValueChange,
+  placeholder,
+}: {
+  years: number[]
+  value: string
+  onValueChange: (value: string) => void
+  placeholder: string
+}) {
+  const [searchQuery, setSearchQuery] = useState("")
+  const filteredYears = searchQuery ? years.filter((year) => year.toString().includes(searchQuery)) : years
+
+  return (
+    <Select value={value} onValueChange={onValueChange}>
+      <SelectTrigger>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent className="max-h-[300px]">
+        <div className="flex items-center border-b px-3 pb-2">
+          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+          <input
+            className="flex h-9 w-full rounded-md bg-transparent py-2 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            placeholder="Search year..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="max-h-[200px] overflow-y-auto">
+          {filteredYears.length > 0 ? (
+            filteredYears.map((year) => (
+              <SelectItem key={year} value={year.toString()}>
+                {year}
+              </SelectItem>
+            ))
+          ) : (
+            <div className="py-6 text-center text-sm text-muted-foreground">No years found</div>
+          )}
+        </div>
+      </SelectContent>
+    </Select>
+  )
+}
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -49,6 +109,7 @@ export default function SubmissionForm() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [activeTab, setActiveTab] = useState("personal")
   const [companies, setCompanies] = useState<string[]>([])
+  const yearOptions = generateYearOptions()
 
   // Get existing companies for autocomplete
   useEffect(() => {
@@ -365,20 +426,14 @@ export default function SubmissionForm() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Graduation Year</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select year" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="2023">2023</SelectItem>
-                            <SelectItem value="2022">2022</SelectItem>
-                            <SelectItem value="2021">2021</SelectItem>
-                            <SelectItem value="2020">2020</SelectItem>
-                            <SelectItem value="2019">2019</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <SearchableYearSelect
+                            years={yearOptions}
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            placeholder="Select year"
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -470,20 +525,14 @@ export default function SubmissionForm() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Placement Year</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select year" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="2023">2023</SelectItem>
-                            <SelectItem value="2022">2022</SelectItem>
-                            <SelectItem value="2021">2021</SelectItem>
-                            <SelectItem value="2020">2020</SelectItem>
-                            <SelectItem value="2019">2019</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <SearchableYearSelect
+                            years={yearOptions}
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            placeholder="Select year"
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}

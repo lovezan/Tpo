@@ -104,13 +104,7 @@ export default function AdminLoginPage() {
           <CardDescription>Login to access the admin dashboard</CardDescription>
         </CardHeader>
         <CardContent>
-          <Alert className="mb-6">
-            <Info className="h-4 w-4" />
-            <AlertTitle>Development Mode</AlertTitle>
-            <AlertDescription>
-              For testing, use email: <strong>admin@nith.ac.in</strong> and password: <strong>password</strong>
-            </AlertDescription>
-          </Alert>
+         
 
           {error && (
             <Alert variant="destructive" className="mb-6">
@@ -129,7 +123,7 @@ export default function AdminLoginPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="admin@nith.ac.in" {...field} />
+                      <Input placeholder="Enter admin email....." {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

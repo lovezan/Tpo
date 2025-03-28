@@ -48,14 +48,11 @@ export default function ExperienceList() {
         // Get experiences from Firestore
         const experiences = await getExperiences()
 
-        // Only show approved experiences
-        const approvedExperiences = experiences.filter((exp) => exp.status === "approved")
+        // Store all experiences (will already be filtered for non-admin users in getExperiences)
+        setAllExperiences(experiences)
 
-        // Store all approved experiences
-        setAllExperiences(approvedExperiences)
-
-        // Initially display all approved experiences
-        setDisplayedExperiences(approvedExperiences)
+        // Initially display all experiences
+        setDisplayedExperiences(experiences)
       } catch (error) {
         console.error("Error loading experiences:", error)
         toast({
@@ -122,14 +119,14 @@ export default function ExperienceList() {
   }, [searchParams, isLoading, allExperiences]) // Dependencies: searchParams, loading state, and all experiences
 
   if (isLoading) {
-    return <div className="text-center py-12">Loading experiences...</div>
+    return <div className="text-center py-8 sm:py-12 text-sm sm:text-base">Loading experiences...</div>
   }
 
   if (displayedExperiences.length === 0) {
     return (
-      <div className="text-center py-12">
-        <h3 className="text-lg font-medium">No experiences found</h3>
-        <p className="text-muted-foreground mt-2">Try adjusting your filters or search criteria</p>
+      <div className="text-center py-8 sm:py-12">
+        <h3 className="text-base sm:text-lg font-medium">No experiences found</h3>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-2">Try adjusting your filters or search criteria</p>
         <Button asChild className="mt-4">
           <Link href="/submit">Share Your Experience</Link>
         </Button>
@@ -138,48 +135,56 @@ export default function ExperienceList() {
   }
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       {displayedExperiences.map((experience) => (
-        <Card key={experience.id} className="flex flex-col">
-          <CardHeader className="pb-4">
+        <Card key={experience.id} className="flex flex-col overflow-hidden">
+          <CardHeader className="p-3 sm:p-4 pb-2 sm:pb-4">
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-2">
-                <Avatar>
+                <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
                   <AvatarImage src={experience.profileImage} alt={experience.studentName} />
                   <AvatarFallback>{experience.studentName.substring(0, 2)}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <CardTitle className="text-lg">{experience.studentName}</CardTitle>
-                  <CardDescription>{experience.branch}</CardDescription>
+                  <CardTitle className="text-sm sm:text-lg line-clamp-1">{experience.studentName}</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm line-clamp-1">{experience.branch}</CardDescription>
                 </div>
               </div>
               <Image
                 src={experience.companyLogo || "/placeholder.svg"}
                 alt={`${experience.company} logo`}
-                width={40}
-                height={40}
-                className="rounded-md"
+                width={32}
+                height={32}
+                className="rounded-md h-8 w-8 sm:h-10 sm:w-10 object-contain"
               />
             </div>
           </CardHeader>
-          <CardContent className="flex-1">
-            <div className="flex flex-wrap gap-2 mb-3">
-              <Badge variant="outline">{experience.company}</Badge>
-              <Badge variant="secondary">{experience.type}</Badge>
-              <Badge variant="outline">{experience.year}</Badge>
+          <CardContent className="flex-1 p-3 sm:p-4 pt-0 sm:pt-0">
+            <div className="flex flex-wrap gap-1 sm:gap-2 mb-2 sm:mb-3">
+              <Badge variant="outline" className="text-[10px] sm:text-xs px-1.5 py-0 h-5">
+                {experience.company}
+              </Badge>
+              <Badge variant="secondary" className="text-[10px] sm:text-xs px-1.5 py-0 h-5">
+                {experience.type}
+              </Badge>
+              <Badge variant="outline" className="text-[10px] sm:text-xs px-1.5 py-0 h-5">
+                {experience.year}
+              </Badge>
               {experience.role && (
-                <Badge variant="outline" className="bg-primary/10">
+                <Badge variant="outline" className="text-[10px] sm:text-xs px-1.5 py-0 h-5 bg-primary/10">
                   {experience.role}
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-muted-foreground line-clamp-4">{experience.excerpt}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-3 sm:line-clamp-4">
+              {experience.excerpt}
+            </p>
           </CardContent>
-          <CardFooter>
-            <Button asChild variant="ghost" className="w-full">
+          <CardFooter className="p-3 sm:p-4">
+            <Button asChild variant="ghost" className="w-full h-8 sm:h-9 text-xs sm:text-sm">
               <Link href={`/experiences/${experience.id}`} className="flex items-center justify-between">
                 <span>Read Full Experience</span>
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
               </Link>
             </Button>
           </CardFooter>

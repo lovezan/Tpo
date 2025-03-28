@@ -14,9 +14,27 @@ export default function Home() {
         <div className="container px-4 md:px-6">
           <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
             <div className="flex flex-col justify-center space-y-4">
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tighter sm:text-3xl xl:text-5xl/none">
-                  Every Expreience Matters - Learn, Improve, and Succeed
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="inline-flex items-center rounded-full border border-green-600 bg-green-100 dark:bg-green-900/30 nith-theme:bg-gold/20 px-3 py-1 text-xs font-medium text-green-700 dark:text-green-400 nith-theme:text-gold nith-theme:border-gold">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3.5 w-3.5 mr-1"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                      <path d="m9 12 2 2 4-4" />
+                    </svg>
+                    Official NITH Affiliated Portal
+                  </div>
+                </div>
+                <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
+                  Learn from the Success Stories of Your Seniors
                 </h1>
                 <p className="max-w-[600px] text-muted-foreground md:text-xl">
                   Discover placement experiences, interview insights, and preparation strategies from NIT Hamirpur
@@ -34,7 +52,7 @@ export default function Home() {
             </div>
             <div className="flex justify-center">
               <Image
-                src="/nith.jpg"
+                src="/nith.png"
                 alt="Students celebrating placement success"
                 width={500}
                 height={500}
@@ -116,12 +134,19 @@ export default function Home() {
       {/* Stats Section */}
       <StatsSection />
 
+      {/* Real-time Update Message */}
+      <div className="container px-3 sm:px-4 md:px-6 py-2">
+        <div className="bg-muted/50 rounded-lg p-2 sm:p-3 text-center text-[10px] sm:text-xs md:text-sm text-muted-foreground">
+          <p>Data is updated in real-time to reflect the most current information from our database.</p>
+        </div>
+      </div>
+
       {/* Featured Experiences */}
-      <section className="container px-4 md:px-6 py-8">
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-3xl font-bold tracking-tight">Featured Experiences</h2>
-            <Button asChild variant="ghost">
+      <section className="container px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+        <div className="flex flex-col gap-3 sm:gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Featured Experiences</h2>
+            <Button asChild variant="ghost" className="self-start sm:self-auto">
               <Link href="/experiences" className="flex items-center gap-1">
                 View All <ArrowRight className="h-4 w-4" />
               </Link>
