@@ -1,489 +1,378 @@
 "use client"
 
-import { useEffect, useState, useCallback, useRef } from "react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import Image from "next/image"
+import { useParams, useRouter } from "next/navigation"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { AlertCircle, CheckCircle, XCircle, ChevronDown, ChevronUp, Trash2 } from "lucide-react"
-import type { Experience } from "@/components/experience-list"
-import {
-  approveExperience,
-  rejectExperience,
-  getExperiences,
-  logoutAdminUser,
-  deleteExperience,
-} from "@/lib/data-utils"
+import { ArrowLeft, Calendar, Building, Briefcase, Linkedin, Github, Mail, Award, ExternalLink } from "lucide-react"
+import { getExperiences } from "@/lib/data-utils"
 import { toast } from "@/hooks/use-toast"
+import type { Experience } from "@/components/experience-list"
 
-export default function AdminPage() {
+// Function to get the company type name
+const getCompanyTypeName = (companyType: string) => {
+  switch (companyType) {
+    case "product":
+      return "Product Based"
+    case "service":
+      return "Service Based"
+    case "consulting":
+      return "Consulting"
+    case "mixed":
+      return "Mixed"
+    default:
+      return "Unknown"
+  }
+}
+
+export default function ExperiencePage() {
+  const params = useParams()
   const router = useRouter()
+  const [experience, setExperience] = useState<Experience | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [adminName, setAdminName] = useState("")
-  const [pendingExperiences, setPendingExperiences] = useState<Experience[]>([])
-  const [approvedExperiences, setApprovedExperiences] = useState<Experience[]>([])
-  const [rejectedExperiences, setRejectedExperiences] = useState<Experience[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState("pending")
-
-  // Use refs to prevent memory leaks and cleanup issues
-  const isMounted = useRef(true)
-
-  // Memoize the loadExperiences function to prevent unnecessary re-renders
-  const loadExperiences = useCallback(async () => {
-    if (!isMounted.current) return
-
-    try {
-      const allExperiences = await getExperiences()
-
-      if (!isMounted.current) return
-
-      setPendingExperiences(allExperiences.filter((exp) => exp.status === "pending"))
-      setApprovedExperiences(allExperiences.filter((exp) => exp.status === "approved"))
-      setRejectedExperiences(allExperiences.filter((exp) => exp.status === "rejected"))
-    } catch (error) {
-      console.error("Error loading experiences:", error)
-      if (isMounted.current) {
-        toast({
-          title: "Error",
-          description: "Failed to load experiences. Please try again.",
-          variant: "destructive",
-        })
-      }
-    }
-  }, [])
+  const [relatedExperiences, setRelatedExperiences] = useState<Experience[]>([])
 
   useEffect(() => {
-    // Set isMounted to true when component mounts
-    isMounted.current = true
-
-    // Check if user is logged in as admin
-    const checkAdminStatus = () => {
+    const loadExperience = async () => {
       try {
+        // Check if user is logged in as admin
         const adminData = localStorage.getItem("currentAdmin")
+        setIsAdmin(!!adminData)
 
-        if (!adminData) {
-          // Redirect to login if not logged in
-          router.push("/admin/login")
-          return false
+        // Get experience by ID
+        const id = Number.parseInt(params.id as string)
+        const experiences = await getExperiences()
+        const foundExperience = experiences.find((exp) => exp.id === id)
+
+        if (foundExperience) {
+          setExperience(foundExperience)
+
+          // Find related experiences (same company or same student)
+          // For non-admin users, this will already be filtered to approved experiences only
+          const related = experiences
+            .filter(
+              (exp) =>
+                exp.id !== id &&
+                (exp.company === foundExperience.company || exp.studentName === foundExperience.studentName),
+            )
+            .slice(0, 3)
+
+          setRelatedExperiences(related)
+        } else {
+          // Redirect to experiences page if not found
+          toast({
+            title: "Experience not found",
+            description: "The experience you're looking for doesn't exist or has been removed.",
+            variant: "destructive",
+          })
+          router.push("/experiences")
         }
-
-        const admin = JSON.parse(adminData)
-        setIsAdmin(true)
-        setAdminName(admin.name)
-        return true
       } catch (error) {
-        console.error("Error parsing admin data:", error)
-        router.push("/admin/login")
-        return false
+        console.error("Error loading experience:", error)
+        toast({
+          title: "Error",
+          description: "Failed to load experience details. Please try again.",
+          variant: "destructive",
+        })
+        router.push("/experiences")
       } finally {
         setIsLoading(false)
       }
     }
 
-    const isAdminLoggedIn = checkAdminStatus()
-
-    // Only load experiences if admin is logged in
-    if (isAdminLoggedIn) {
-      loadExperiences()
-    }
-
-    // Cleanup function to prevent memory leaks and state updates after unmount
-    return () => {
-      isMounted.current = false
-    }
-  }, [router, loadExperiences])
-
-  const handleApprove = async (id: number) => {
-    if (!isMounted.current) return
-
-    try {
-      await approveExperience(id)
-
-      if (!isMounted.current) return
-
-      toast({
-        title: "Success",
-        description: "Experience approved successfully.",
-      })
-      loadExperiences()
-    } catch (error) {
-      console.error("Error approving experience:", error)
-
-      if (isMounted.current) {
-        toast({
-          title: "Error",
-          description: "Failed to approve experience. Please try again.",
-          variant: "destructive",
-        })
-      }
-    }
-  }
-
-  const handleReject = async (id: number) => {
-    if (!isMounted.current) return
-
-    try {
-      await rejectExperience(id)
-
-      if (!isMounted.current) return
-
-      toast({
-        title: "Success",
-        description: "Experience rejected successfully.",
-      })
-      loadExperiences()
-    } catch (error) {
-      console.error("Error rejecting experience:", error)
-
-      if (isMounted.current) {
-        toast({
-          title: "Error",
-          description: "Failed to reject experience. Please try again.",
-          variant: "destructive",
-        })
-      }
-    }
-  }
-
-  const handleDelete = async (id: number) => {
-    if (!isMounted.current) return
-
-    // Confirm before deleting
-    if (!window.confirm("Are you sure you want to delete this experience? This action cannot be undone.")) {
-      return
-    }
-
-    try {
-      await deleteExperience(id)
-
-      if (!isMounted.current) return
-
-      toast({
-        title: "Success",
-        description: "Experience deleted successfully.",
-      })
-      loadExperiences()
-    } catch (error) {
-      console.error("Error deleting experience:", error)
-
-      if (isMounted.current) {
-        toast({
-          title: "Error",
-          description: "Failed to delete experience. Please try again.",
-          variant: "destructive",
-        })
-      }
-    }
-  }
-
-  const handleLogout = async () => {
-    if (!isMounted.current) return
-
-    try {
-      await logoutAdminUser()
-      localStorage.removeItem("currentAdmin")
-      router.push("/")
-    } catch (error) {
-      console.error("Error during logout:", error)
-
-      if (isMounted.current) {
-        toast({
-          title: "Error",
-          description: "Failed to logout. Please try again.",
-          variant: "destructive",
-        })
-      }
-    }
-  }
-
-  const handleTabChange = (value: string) => {
-    setActiveTab(value)
-  }
+    loadExperience()
+  }, [params.id, router])
 
   if (isLoading) {
     return (
-      <div className="container py-6 sm:py-8 md:py-12 px-3 sm:px-4 md:px-6">
-        <p>Loading...</p>
+      <div className="container px-4 md:px-6 py-8 md:py-12">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">Loading experience details...</p>
+        </div>
       </div>
     )
   }
 
-  if (!isAdmin) {
+  if (!experience) {
     return (
-      <div className="container py-6 sm:py-8 md:py-12 px-3 sm:px-4 md:px-6">
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Authentication Required</AlertTitle>
-          <AlertDescription>You need to be logged in as an admin to access this page.</AlertDescription>
-        </Alert>
+      <div className="container px-4 md:px-6 py-8 md:py-12">
+        <p>Experience not found</p>
+      </div>
+    )
+  }
+
+  // Only show approved experiences to non-admin users
+  if (!isAdmin && experience.status !== "approved") {
+    return (
+      <div className="container px-4 md:px-6 py-8 md:py-12">
+        <h1 className="text-2xl font-bold mb-4">Experience Not Available</h1>
+        <p>This experience is currently under review and not yet published.</p>
+        <Button asChild className="mt-4">
+          <Link href="/experiences">Back to Experiences</Link>
+        </Button>
       </div>
     )
   }
 
   return (
-    <div className="container px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 lg:py-12">
-      <div className="flex flex-col gap-4 sm:gap-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-            <p className="text-muted-foreground text-sm">Welcome back, {adminName}</p>
-          </div>
+    <div className="container px-4 md:px-6 py-8 md:py-12">
+      <Button asChild variant="ghost" className="mb-6">
+        <Link href="/experiences" className="flex items-center gap-2">
+          <ArrowLeft className="h-4 w-4" />
+          Back to Experiences
+        </Link>
+      </Button>
 
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleLogout} className="text-xs sm:text-sm">
-              Logout
-            </Button>
-          </div>
+      {experience.status === "pending" && isAdmin && (
+        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md text-yellow-800">
+          <p className="font-medium">This experience is pending approval</p>
+          <p className="text-sm">Only admins can view pending experiences</p>
         </div>
+      )}
 
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="pending" className="text-xs sm:text-sm">
-              Pending
-              {pendingExperiences.length > 0 && (
-                <Badge variant="secondary" className="ml-1 sm:ml-2 text-[10px] sm:text-xs">
-                  {pendingExperiences.length}
+      <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
+        <div className="space-y-8">
+          {/* Header with student info */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16">
+                <AvatarImage src={experience.profileImage} alt={experience.studentName} />
+                <AvatarFallback>{experience.studentName.substring(0, 2)}</AvatarFallback>
+              </Avatar>
+              <div>
+                <h1 className="text-2xl font-bold md:text-3xl">{experience.studentName}</h1>
+                <p className="text-muted-foreground">{experience.branch}</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline" className="text-sm">
+                {experience.company}
+              </Badge>
+              <Badge variant="secondary" className="text-sm">
+                {experience.type}
+              </Badge>
+              <Badge variant="outline" className="text-sm">
+                {experience.year}
+              </Badge>
+              {experience.companyType && (
+                <Badge variant="outline" className="text-sm bg-blue-100 dark:bg-blue-900/30 nith-theme:bg-gold/20">
+                  {getCompanyTypeName(experience.companyType)}
                 </Badge>
               )}
-            </TabsTrigger>
-            <TabsTrigger value="approved" className="text-xs sm:text-sm">
-              Approved
-            </TabsTrigger>
-            <TabsTrigger value="rejected" className="text-xs sm:text-sm">
-              Rejected
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="pending" className="mt-4 sm:mt-6">
-            {pendingExperiences.length === 0 ? (
-              <div className="text-center py-6 sm:py-8 md:py-12">
-                <h3 className="text-base sm:text-lg font-medium">No pending experiences</h3>
-                <p className="text-muted-foreground mt-2 text-sm">All submissions have been reviewed</p>
-              </div>
-            ) : (
-              <div className="grid gap-3 sm:gap-4 md:gap-6">
-                {pendingExperiences.map((experience) => (
-                  <ExperienceCard
-                    key={experience.id}
-                    experience={experience}
-                    onApprove={() => handleApprove(experience.id)}
-                    onReject={() => handleReject(experience.id)}
-                    onDelete={() => handleDelete(experience.id)}
-                    isPending={true}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="approved" className="mt-4 sm:mt-6">
-            {approvedExperiences.length === 0 ? (
-              <div className="text-center py-6 sm:py-8 md:py-12">
-                <h3 className="text-base sm:text-lg font-medium">No approved experiences</h3>
-                <p className="text-muted-foreground mt-2 text-sm">Approve pending submissions to see them here</p>
-              </div>
-            ) : (
-              <div className="grid gap-3 sm:gap-4 md:gap-6">
-                {approvedExperiences.map((experience) => (
-                  <ExperienceCard
-                    key={experience.id}
-                    experience={experience}
-                    onDelete={() => handleDelete(experience.id)}
-                    isPending={false}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="rejected" className="mt-4 sm:mt-6">
-            {rejectedExperiences.length === 0 ? (
-              <div className="text-center py-6 sm:py-8 md:py-12">
-                <h3 className="text-base sm:text-lg font-medium">No rejected experiences</h3>
-                <p className="text-muted-foreground mt-2 text-sm">Rejected submissions will appear here</p>
-              </div>
-            ) : (
-              <div className="grid gap-3 sm:gap-4 md:gap-6">
-                {rejectedExperiences.map((experience) => (
-                  <ExperienceCard
-                    key={experience.id}
-                    experience={experience}
-                    onDelete={() => handleDelete(experience.id)}
-                    isPending={false}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-  )
-}
-
-interface ExperienceCardProps {
-  experience: Experience
-  onApprove?: () => void
-  onReject?: () => void
-  onDelete?: () => void
-  isPending: boolean
-}
-
-function ExperienceCard({ experience, onApprove, onReject, onDelete, isPending }: ExperienceCardProps) {
-  const [showDetails, setShowDetails] = useState(false)
-
-  return (
-    <Card className="overflow-hidden">
-      <CardHeader className="p-3 sm:p-4 md:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-          <div>
-            <CardTitle className="text-base sm:text-lg md:text-xl line-clamp-1">{experience.studentName}</CardTitle>
-            <CardDescription className="text-xs sm:text-sm line-clamp-1">
-              {experience.branch} • {experience.company} • {experience.year}
-            </CardDescription>
-          </div>
-
-          {isPending ? (
-            <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-red-500 hover:text-red-700 hover:bg-red-50 flex-1 sm:flex-none text-xs h-8"
-                onClick={onReject}
-              >
-                <XCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                <span>Reject</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-green-500 hover:text-green-700 hover:bg-green-50 flex-1 sm:flex-none text-xs h-8"
-                onClick={onApprove}
-              >
-                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                <span>Approve</span>
-              </Button>
-              <Button variant="destructive" size="sm" className="flex-1 sm:flex-none text-xs h-8" onClick={onDelete}>
-                <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                <span>Delete</span>
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Badge
-                variant={experience.status === "approved" ? "success" : "destructive"}
-                className="text-[10px] sm:text-xs"
-              >
-                {experience.status === "approved" ? "Approved" : "Rejected"}
-              </Badge>
-              <Button variant="destructive" size="sm" className="h-7 text-xs" onClick={onDelete}>
-                <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                <span>Delete</span>
-              </Button>
-            </div>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="p-3 sm:p-4 md:p-6 pt-0 sm:pt-0 md:pt-0">
-        <div className="space-y-3 sm:space-y-4">
-          <div className="flex flex-wrap gap-1 sm:gap-2">
-            <Badge variant="outline" className="text-[10px] sm:text-xs">
-              {experience.company}
-            </Badge>
-            <Badge variant="secondary" className="text-[10px] sm:text-xs">
-              {experience.type}
-            </Badge>
-            <Badge variant="outline" className="text-[10px] sm:text-xs">
-              {experience.year}
-            </Badge>
-            {experience.role && (
-              <Badge variant="outline" className="text-[10px] sm:text-xs bg-primary/10">
-                {experience.role}
-              </Badge>
-            )}
-          </div>
-
-          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3">{experience.excerpt}</p>
-
-          <div className="pt-2">
-            <Button
-              variant="secondary"
-              className="w-full flex items-center justify-center gap-1 text-xs sm:text-sm h-8 sm:h-9"
-              onClick={() => setShowDetails(!showDetails)}
-            >
-              <span>{showDetails ? "Hide Details" : "View Full Experience"}</span>
-              {showDetails ? (
-                <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4" />
-              ) : (
-                <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
+              {experience.role && (
+                <Badge variant="outline" className="text-sm bg-primary/10">
+                  {experience.role}
+                </Badge>
               )}
-            </Button>
+            </div>
           </div>
 
-          {showDetails && (
-            <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4 border-t pt-3 sm:pt-4">
-              <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
-                <div>
-                  <h3 className="text-sm sm:text-md font-semibold mb-1 sm:mb-2">Preparation Strategy</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    {experience.preparationStrategy || "Not provided"}
-                  </p>
-                </div>
+          <Separator />
 
-                <div>
-                  <h3 className="text-sm sm:text-md font-semibold mb-1 sm:mb-2">Interview Process</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    {experience.interviewProcess || "Not provided"}
-                  </p>
+          {/* Full Experience Content */}
+          <div className="space-y-8">
+            <div className="prose prose-gray dark:prose-invert max-w-none">
+              <h2 className="text-xl font-semibold mb-4">Preparation Strategy</h2>
+              <div className="bg-muted/50 p-6 rounded-lg">
+                <p className="whitespace-pre-line">
+                  {experience.preparationStrategy || "No preparation details provided."}
+                </p>
+              </div>
+            </div>
+
+            <div className="prose prose-gray dark:prose-invert max-w-none">
+              <h2 className="text-xl font-semibold mb-4">Interview Process</h2>
+              <div className="bg-muted/50 p-6 rounded-lg">
+                <p className="whitespace-pre-line">{experience.interviewProcess || "No interview details provided."}</p>
+              </div>
+            </div>
+
+            <div className="prose prose-gray dark:prose-invert max-w-none">
+              <h2 className="text-xl font-semibold mb-4">Tips for Success</h2>
+              <div className="bg-muted/50 p-6 rounded-lg">
+                <p className="whitespace-pre-line">{experience.tips || "No tips provided."}</p>
+              </div>
+            </div>
+
+            <div className="prose prose-gray dark:prose-invert max-w-none">
+              <h2 className="text-xl font-semibold mb-4">Challenges Faced</h2>
+              <div className="bg-muted/50 p-6 rounded-lg">
+                <p className="whitespace-pre-line">{experience.challenges || "No challenges provided."}</p>
+              </div>
+            </div>
+
+            {experience.resources && experience.resources.length > 0 && (
+              <div className="prose prose-gray dark:prose-invert max-w-none">
+                <h2 className="text-xl font-semibold mb-4">Helpful Resources</h2>
+                <div className="bg-muted/50 p-6 rounded-lg">
+                  <ul className="space-y-2">
+                    {experience.resources.map((resource, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4 text-primary shrink-0" />
+                        <a
+                          href={resource.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          {resource.title}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
+            )}
+          </div>
+        </div>
 
+        <div className="space-y-6">
+          {/* Company Card */}
+          <Card className="p-6">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <Image
+                src={experience.companyLogo || "/placeholder.svg"}
+                alt={`${experience.company} logo`}
+                width={80}
+                height={80}
+                className="rounded-md"
+              />
+              <h2 className="text-xl font-semibold">{experience.company}</h2>
               <Separator />
-
-              <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
-                <div>
-                  <h3 className="text-sm sm:text-md font-semibold mb-1 sm:mb-2">Tips for Success</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">{experience.tips || "Not provided"}</p>
+              <div className="grid w-full gap-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <Building className="h-4 w-4 text-muted-foreground" />
+                  <span>Placement Type:</span>
+                  <span className="ml-auto font-medium">{experience.type}</span>
                 </div>
-
-                <div>
-                  <h3 className="text-sm sm:text-md font-semibold mb-1 sm:mb-2">Challenges Faced</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">{experience.challenges || "Not provided"}</p>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span>Year:</span>
+                  <span className="ml-auto font-medium">{experience.year}</span>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 text-muted-foreground" />
+                  <span>Role:</span>
+                  <span className="ml-auto font-medium">{experience.role || "Software Engineer"}</span>
+                </div>
+                {experience.package && (
+                  <div className="flex items-center gap-2">
+                    <Award className="h-4 w-4 text-muted-foreground" />
+                    <span>Package:</span>
+                    <span className="ml-auto font-medium">{experience.package}</span>
+                  </div>
+                )}
               </div>
+            </div>
+          </Card>
 
-              {(experience.linkedIn || experience.github || experience.personalEmail) && (
+          {/* Contact Card */}
+          <Card className="p-6">
+            <h3 className="mb-4 text-lg font-semibold">Connect with {experience.studentName.split(" ")[0]}</h3>
+            <div className="space-y-4">
+              {experience.linkedIn && (
+                <div className="flex items-center gap-3">
+                  <Linkedin className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <h4 className="text-sm font-medium">LinkedIn</h4>
+                    <a
+                      href={
+                        experience.linkedIn.startsWith("http") ? experience.linkedIn : `https://${experience.linkedIn}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Connect on LinkedIn
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {experience.github && (
                 <>
                   <Separator />
-                  <div>
-                    <h3 className="text-sm sm:text-md font-semibold mb-1 sm:mb-2">Contact Information</h3>
-                    <div className="grid gap-1 sm:gap-2 sm:grid-cols-2">
-                      {experience.linkedIn && (
-                        <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                          LinkedIn: {experience.linkedIn}
-                        </p>
-                      )}
-                      {experience.github && (
-                        <p className="text-xs sm:text-sm text-muted-foreground truncate">GitHub: {experience.github}</p>
-                      )}
-                      {experience.personalEmail && (
-                        <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                          Email: {experience.personalEmail}
-                        </p>
-                      )}
+                  <div className="flex items-center gap-3">
+                    <Github className="h-5 w-5 text-gray-800 dark:text-gray-200" />
+                    <div>
+                      <h4 className="text-sm font-medium">GitHub</h4>
+                      <a
+                        href={
+                          experience.github.startsWith("http")
+                            ? experience.github
+                            : `https://github.com/${experience.github}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline"
+                      >
+                        View GitHub Profile
+                      </a>
                     </div>
                   </div>
                 </>
               )}
+
+              {experience.personalEmail && (
+                <>
+                  <Separator />
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-5 w-5 text-red-500" />
+                    <div>
+                      <h4 className="text-sm font-medium">Email</h4>
+                      <a href={`mailto:${experience.personalEmail}`} className="text-xs text-primary hover:underline">
+                        {experience.personalEmail}
+                      </a>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {!experience.linkedIn && !experience.github && !experience.personalEmail && (
+                <p className="text-sm text-muted-foreground text-center">No contact information provided</p>
+              )}
             </div>
+          </Card>
+
+          {/* Related Experiences Card */}
+          {relatedExperiences.length > 0 && (
+            <Card className="p-6">
+              <h3 className="mb-4 text-lg font-semibold">Related Experiences</h3>
+              <div className="space-y-4">
+                {relatedExperiences.map((relatedExp) => (
+                  <div key={relatedExp.id}>
+                    <div className="flex items-start gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={relatedExp.profileImage} alt={relatedExp.studentName} />
+                        <AvatarFallback>{relatedExp.studentName.substring(0, 2)}</AvatarFallback>
+                      </Avatar>
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-medium">{relatedExp.studentName}</h4>
+                        <p className="text-xs text-muted-foreground">
+                          {relatedExp.company}, {relatedExp.year}
+                        </p>
+                        <Link href={`/experiences/${relatedExp.id}`} className="text-xs text-primary hover:underline">
+                          Read Experience
+                        </Link>
+                      </div>
+                    </div>
+                    {relatedExperiences.indexOf(relatedExp) < relatedExperiences.length - 1 && (
+                      <Separator className="my-4" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Card>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
 
