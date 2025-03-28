@@ -22,6 +22,7 @@ export type Company = {
   logo: string
   category?: string
   studentsPlaced: number
+  experiencesCount?: number
 }
 
 // Admin type definition
@@ -357,15 +358,37 @@ function getMockExperiences(): Experience[] {
 
 function getMockCompanies(): Company[] {
   return [
-    { id: 1, name: "Microsoft", logo: "/placeholder.svg?height=80&width=80", category: "Tech", studentsPlaced: 20 },
-    { id: 2, name: "Google", logo: "/placeholder.svg?height=80&width=80", category: "Tech", studentsPlaced: 15 },
-    { id: 3, name: "Amazon", logo: "/placeholder.svg?height=80&width=80", category: "Tech", studentsPlaced: 18 },
+    {
+      id: 1,
+      name: "Microsoft",
+      logo: "/placeholder.svg?height=80&width=80",
+      category: "Tech",
+      studentsPlaced: 20,
+      experiencesCount: 20,
+    },
+    {
+      id: 2,
+      name: "Google",
+      logo: "/placeholder.svg?height=80&width=80",
+      category: "Tech",
+      studentsPlaced: 15,
+      experiencesCount: 15,
+    },
+    {
+      id: 3,
+      name: "Amazon",
+      logo: "/placeholder.svg?height=80&width=80",
+      category: "Tech",
+      studentsPlaced: 18,
+      experiencesCount: 18,
+    },
     {
       id: 4,
       name: "Goldman Sachs",
       logo: "/placeholder.svg?height=80&width=80",
       category: "Finance",
       studentsPlaced: 12,
+      experiencesCount: 12,
     },
     {
       id: 5,
@@ -373,11 +396,40 @@ function getMockCompanies(): Company[] {
       logo: "/placeholder.svg?height=80&width=80",
       category: "Finance",
       studentsPlaced: 10,
+      experiencesCount: 10,
     },
-    { id: 6, name: "Tata Motors", logo: "/placeholder.svg?height=80&width=80", category: "Core", studentsPlaced: 8 },
-    { id: 7, name: "Flipkart", logo: "/placeholder.svg?height=80&width=80", category: "Product", studentsPlaced: 14 },
-    { id: 8, name: "Infosys", logo: "/placeholder.svg?height=80&width=80", category: "Service", studentsPlaced: 25 },
-    { id: 9, name: "TCS", logo: "/placeholder.svg?height=80&width=80", category: "Service", studentsPlaced: 30 },
+    {
+      id: 6,
+      name: "Tata Motors",
+      logo: "/placeholder.svg?height=80&width=80",
+      category: "Core",
+      studentsPlaced: 8,
+      experiencesCount: 8,
+    },
+    {
+      id: 7,
+      name: "Flipkart",
+      logo: "/placeholder.svg?height=80&width=80",
+      category: "Product",
+      studentsPlaced: 14,
+      experiencesCount: 14,
+    },
+    {
+      id: 8,
+      name: "Infosys",
+      logo: "/placeholder.svg?height=80&width=80",
+      category: "Service",
+      studentsPlaced: 25,
+      experiencesCount: 25,
+    },
+    {
+      id: 9,
+      name: "TCS",
+      logo: "/placeholder.svg?height=80&width=80",
+      category: "Service",
+      studentsPlaced: 30,
+      experiencesCount: 30,
+    },
   ]
 }
 
