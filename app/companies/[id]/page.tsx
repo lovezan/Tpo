@@ -229,7 +229,7 @@ export default function CompanyPage({ params }: { params: { id: string } }) {
               <Separator />
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <span className="text-muted-foreground">Category:</span>
-                <span className="font-medium">{company.category}</span>
+                <span className="font-medium">{company.category || "Tech"}</span>
               </div>
             </div>
           </Card>

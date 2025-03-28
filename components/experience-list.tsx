@@ -17,6 +17,7 @@ export type Experience = {
   studentName: string
   branch: string
   company: string
+  companyType?: string // Add company type field
   year: number
   type: string
   excerpt: string
@@ -70,7 +71,7 @@ export default function ExperienceList() {
     fetchExperiences()
   }, []) // Empty dependency array - only run once on mount
 
-  // Apply filters when search params change
+  // Update the filter effect to include company type
   useEffect(() => {
     if (isLoading || allExperiences.length === 0) return
 
@@ -80,6 +81,7 @@ export default function ExperienceList() {
     const company = searchParams?.get("company") || ""
     const year = searchParams?.get("year") || ""
     const type = searchParams?.get("type") || ""
+    const companyType = searchParams?.get("companyType") || ""
 
     // Apply filters
     let filtered = [...allExperiences]
@@ -114,9 +116,16 @@ export default function ExperienceList() {
       filtered = filtered.filter((exp) => exp.type.toLowerCase().replace(/\s+/g, "-") === type)
     }
 
+    // Filter by company type
+    if (companyType && companyType !== "all") {
+      filtered = filtered.filter(
+        (exp) => exp.companyType && exp.companyType.toLowerCase().replace(/\s+/g, "-") === companyType,
+      )
+    }
+
     // Update displayed experiences
     setDisplayedExperiences(filtered)
-  }, [searchParams, isLoading, allExperiences]) // Dependencies: searchParams, loading state, and all experiences
+  }, [searchParams, isLoading, allExperiences])
 
   if (isLoading) {
     return <div className="text-center py-8 sm:py-12 text-sm sm:text-base">Loading experiences...</div>
@@ -132,6 +141,23 @@ export default function ExperienceList() {
         </Button>
       </div>
     )
+  }
+
+  // Add helper function to get company type name
+  function getCompanyTypeName(value: string): string {
+    const typeMap: Record<string, string> = {
+      tech: "Tech",
+      finance: "Finance",
+      core: "Core",
+      product: "Product",
+      service: "Service",
+      consulting: "Consulting",
+      ecommerce: "E-Commerce",
+      healthcare: "Healthcare",
+      manufacturing: "Manufacturing",
+      other: "Other",
+    }
+    return typeMap[value] || value
   }
 
   return (
@@ -170,6 +196,14 @@ export default function ExperienceList() {
               <Badge variant="outline" className="text-[10px] sm:text-xs px-1.5 py-0 h-5">
                 {experience.year}
               </Badge>
+              {experience.companyType && (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] sm:text-xs px-1.5 py-0 h-5 bg-blue-100 dark:bg-blue-900/30 nith-theme:bg-gold/20"
+                >
+                  {getCompanyTypeName(experience.companyType)}
+                </Badge>
+              )}
               {experience.role && (
                 <Badge variant="outline" className="text-[10px] sm:text-xs px-1.5 py-0 h-5 bg-primary/10">
                   {experience.role}

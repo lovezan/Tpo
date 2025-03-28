@@ -2,7 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowRight, Building, Search, Users } from "lucide-react"
+import { ArrowRight, Building, Search, Users, FileText, BookOpen } from "lucide-react"
 import FeaturedExperiences from "@/components/featured-experiences"
 import StatsSection from "@/components/stats-section"
 
@@ -41,12 +41,34 @@ export default function Home() {
                   alumni.
                 </p>
               </div>
-              <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                <Button asChild size="lg">
-                  <Link href="/experiences">Browse Experiences</Link>
+              <div className="flex flex-wrap gap-2">
+                <Button asChild size="lg" className="flex items-center gap-2">
+                  <Link href="/experiences">
+                    <Search className="h-4 w-4 mr-1" />
+                    Browse Experiences
+                  </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg">
-                  <Link href="/submit">Share Your Story</Link>
+                <Button asChild variant="outline" size="lg" className="flex items-center gap-2">
+                  <Link href="/submit">
+                    <Users className="h-4 w-4 mr-1" />
+                    Share Your Story
+                  </Link>
+                </Button>
+                <Button asChild variant="secondary" size="lg" className="flex items-center gap-2">
+                  <a
+                    href="https://www.overleaf.com/latex/templates/tagged/cv"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <FileText className="h-4 w-4 mr-1" />
+                    Resume Builder
+                  </a>
+                </Button>
+                <Button asChild variant="outline" size="lg" className="flex items-center gap-2">
+                  <Link href="/resources">
+                    <BookOpen className="h-4 w-4 mr-1" />
+                    Resources
+                  </Link>
                 </Button>
               </div>
             </div>

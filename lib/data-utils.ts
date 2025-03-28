@@ -372,3 +372,20 @@ function checkIfUserIsAdmin(): boolean {
   }
 }
 
+// Helper function to get company type name
+export function getCompanyTypeName(value: string): string {
+  const typeMap: Record<string, string> = {
+    tech: "Tech",
+    finance: "Finance",
+    core: "Core",
+    product: "Product",
+    service: "Service",
+    consulting: "Consulting",
+    ecommerce: "E-Commerce",
+    healthcare: "Healthcare",
+    manufacturing: "Manufacturing",
+    other: "Other",
+  }
+  return typeMap[value] || value
+}
+

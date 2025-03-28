@@ -1,9 +1,8 @@
 import type { Metadata } from "next"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { MapPin, Phone, Mail, Clock, ExternalLink } from "lucide-react"
+import ContactForm from "@/components/contact-form"
 
 export const metadata: Metadata = {
   title: "Contact | NIT Hamirpur Placement Portal",
@@ -104,7 +103,7 @@ export default function ContactPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="md:block hidden">
               <CardHeader>
                 <CardTitle>Connect With Us</CardTitle>
                 <CardDescription>Follow us on social media for updates</CardDescription>
@@ -138,40 +137,33 @@ export default function ContactPage() {
                 <CardDescription>Fill out the form below and we'll get back to you</CardDescription>
               </CardHeader>
               <CardContent>
-                <form className="space-y-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <label htmlFor="name" className="text-sm font-medium">
-                        Name
-                      </label>
-                      <Input id="name" placeholder="Your name" />
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="text-sm font-medium">
-                        Email
-                      </label>
-                      <Input id="email" type="email" placeholder="Your email" />
-                    </div>
-                  </div>
+                <ContactForm />
+              </CardContent>
+            </Card>
 
-                  <div className="space-y-2">
-                    <label htmlFor="subject" className="text-sm font-medium">
-                      Subject
-                    </label>
-                    <Input id="subject" placeholder="Subject of your message" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="message" className="text-sm font-medium">
-                      Message
-                    </label>
-                    <Textarea id="message" placeholder="Your message" className="min-h-[150px]" />
-                  </div>
-
-                  <Button type="submit" className="w-full">
-                    Send Message
+            <Card className="mt-8 block md:hidden">
+              <CardHeader>
+                <CardTitle>Connect With Us</CardTitle>
+                <CardDescription>Follow us on social media for updates</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap items-center gap-4">
+                  <Button variant="outline" size="sm" className="flex items-center gap-2" asChild>
+                    <a href="https://www.linkedin.com/school/nit-hamirpur/" target="_blank" rel="noopener noreferrer">
+                      LinkedIn <ExternalLink className="h-3 w-3" />
+                    </a>
                   </Button>
-                </form>
+                  <Button variant="outline" size="sm" className="flex items-center gap-2" asChild>
+                    <a href="https://twitter.com/NITHamirpur" target="_blank" rel="noopener noreferrer">
+                      Twitter <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </Button>
+                  <Button variant="outline" size="sm" className="flex items-center gap-2" asChild>
+                    <a href="https://www.facebook.com/NITHamirpur" target="_blank" rel="noopener noreferrer">
+                      Facebook <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
@@ -189,9 +181,9 @@ export default function ContactPage() {
           </div>
         </div>
 
-        <div className="bg-muted rounded-lg p-8 mt-4">
-          <h2 className="text-2xl font-bold mb-4 text-center">Frequently Asked Questions</h2>
-          <div className="grid gap-6 md:grid-cols-2">
+        <div className="bg-muted rounded-lg p-4 sm:p-8 mt-4">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 text-center">Frequently Asked Questions</h2>
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
             <div>
               <h3 className="font-semibold mb-2">How can companies register for campus placements?</h3>
               <p className="text-sm text-muted-foreground">

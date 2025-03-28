@@ -88,6 +88,7 @@ const formSchema = z.object({
   branch: z.string({ required_error: "Please select your branch." }),
   graduationYear: z.string({ required_error: "Please select your graduation year." }),
   company: z.string().min(2, { message: "Company name must be at least 2 characters." }),
+  companyType: z.string({ required_error: "Please select company type." }),
   role: z.string().min(2, { message: "Job role must be at least 2 characters." }),
   placementType: z.string({ required_error: "Please select placement type." }),
   placementYear: z.string({ required_error: "Please select placement year." }),
@@ -141,6 +142,7 @@ export default function SubmissionForm() {
       branch: "",
       graduationYear: "",
       company: "",
+      companyType: "",
       role: "",
       placementType: "",
       placementYear: "",
@@ -172,6 +174,7 @@ export default function SubmissionForm() {
         studentName: values.name,
         branch: getBranchName(values.branch),
         company: values.company,
+        companyType: values.companyType, // Add company type
         year: Number.parseInt(values.placementYear),
         type: getPlacementTypeName(values.placementType),
         excerpt,
@@ -253,7 +256,7 @@ export default function SubmissionForm() {
         return // Don't change tab if validation fails
       }
     } else if (value === "experience" && activeTab === "placement") {
-      const placementFields = ["company", "role", "placementType", "placementYear"]
+      const placementFields = ["company", "companyType", "role", "placementType", "placementYear"]
       const isValid = placementFields.every((field) => {
         return form.getFieldState(field as any).invalid !== true
       })
@@ -279,7 +282,7 @@ export default function SubmissionForm() {
       }
     } else if (activeTab === "placement") {
       // Validate placement fields before proceeding
-      const placementFields = ["company", "role", "placementType", "placementYear"]
+      const placementFields = ["company", "companyType", "role", "placementType", "placementYear"]
       const isValid = await form.trigger(placementFields as any)
 
       if (isValid) {
@@ -482,18 +485,49 @@ export default function SubmissionForm() {
 
                   <FormField
                     control={form.control}
-                    name="role"
+                    name="companyType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Job Role</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Software Engineer, Analyst" {...field} />
-                        </FormControl>
+                        <FormLabel>Company Type</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select company type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="tech">Tech</SelectItem>
+                            <SelectItem value="finance">Finance</SelectItem>
+                            <SelectItem value="core">Core</SelectItem>
+                            <SelectItem value="product">Product</SelectItem>
+                            <SelectItem value="service">Service</SelectItem>
+                            <SelectItem value="consulting">Consulting</SelectItem>
+                            <SelectItem value="ecommerce">E-Commerce</SelectItem>
+                            <SelectItem value="healthcare">Healthcare</SelectItem>
+                            <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>Select the industry/sector of the company</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Role</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Software Engineer, Analyst" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <FormField

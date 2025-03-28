@@ -28,11 +28,27 @@ export default function ExperienceFilter() {
   const [selectedYear, setSelectedYear] = useState<string>("all")
   const [selectedType, setSelectedType] = useState<string>("all")
 
+  // Add company type state
+  const [selectedCompanyType, setSelectedCompanyType] = useState<string>("all")
+
   // These would come from API in a real implementation
   const branches = ["Computer Science", "Electronics & Communication", "Mechanical", "Civil", "Electrical", "Chemical"]
   const companies = ["Microsoft", "Google", "Amazon", "Flipkart", "Tata Motors", "Infosys", "TCS", "Wipro"]
   const years = ["2023", "2022", "2021", "2020"]
   const placementTypes = ["On-Campus", "Off-Campus", "Internship"]
+
+  // Add company types to the filter options
+  const companyTypes = [
+    "Tech",
+    "Finance",
+    "Core",
+    "Product",
+    "Service",
+    "Consulting",
+    "E-Commerce",
+    "Healthcare",
+    "Manufacturing",
+  ]
 
   // Initialize filters from URL params only once on mount or when searchParams change
   useEffect(() => {
@@ -41,12 +57,14 @@ export default function ExperienceFilter() {
     const company = searchParams.get("company") || "all"
     const year = searchParams.get("year") || "all"
     const type = searchParams.get("type") || "all"
+    const companyType = searchParams.get("companyType") || "all"
 
     setSearchQuery(query)
     setSelectedBranch(branch)
     setSelectedCompany(company)
     setSelectedYear(year)
     setSelectedType(type)
+    setSelectedCompanyType(companyType)
   }, [searchParams])
 
   // Create a new URLSearchParams instance and update the URL
@@ -72,6 +90,7 @@ export default function ExperienceFilter() {
       company: selectedCompany === "all" ? null : selectedCompany,
       year: selectedYear === "all" ? null : selectedYear,
       type: selectedType === "all" ? null : selectedType,
+      companyType: selectedCompanyType === "all" ? null : selectedCompanyType,
     })
 
     router.push(`${pathname}?${queryString}`)
@@ -84,6 +103,7 @@ export default function ExperienceFilter() {
     setSelectedCompany("all")
     setSelectedYear("all")
     setSelectedType("all")
+    setSelectedCompanyType("all")
     router.push(pathname)
   }
 
@@ -214,6 +234,23 @@ export default function ExperienceFilter() {
                     <SelectContent>
                       <SelectItem value="all">All Types</SelectItem>
                       {placementTypes.map((type) => (
+                        <SelectItem key={type} value={type.toLowerCase().replace(/\s+/g, "-")}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">Company Type</h3>
+                  <Select value={selectedCompanyType} onValueChange={setSelectedCompanyType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select company type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      {companyTypes.map((type) => (
                         <SelectItem key={type} value={type.toLowerCase().replace(/\s+/g, "-")}>
                           {type}
                         </SelectItem>
