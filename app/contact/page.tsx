@@ -5,8 +5,8 @@ import { MapPin, Phone, Mail, Clock, ExternalLink } from "lucide-react"
 import ContactForm from "@/components/contact-form"
 
 export const metadata: Metadata = {
-  title: "Contact | NIT Hamirpur Placement Portal",
-  description: "Contact the NIT Hamirpur Placement and Training Cell for queries related to placements and the portal",
+  title: "Contact | NITH Career Compass",
+  description: "Contact the NIT Hamirpur Training and Placement Cell for queries related to placements and the portal",
 }
 
 export default function ContactPage() {
@@ -24,7 +24,7 @@ export default function ContactPage() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Placement and Training Cell</CardTitle>
+                <CardTitle>Training and Placement Cell</CardTitle>
                 <CardDescription>NIT Hamirpur</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -33,7 +33,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-medium">Address</h3>
                     <p className="text-sm text-muted-foreground">
-                      Placement and Training Cell
+                      Training and Placement Cell
                       <br />
                       National Institute of Technology
                       <br />
@@ -48,8 +48,8 @@ export default function ContactPage() {
                   <Phone className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                   <div>
                     <h3 className="font-medium">Phone</h3>
-                    <p className="text-sm text-muted-foreground">+91-1972-254011</p>
-                    <p className="text-sm text-muted-foreground">+91-1972-254012 (Fax)</p>
+                    <p className="text-sm text-muted-foreground">01972-254591</p>
+                  
                   </div>
                 </div>
 
@@ -57,7 +57,7 @@ export default function ContactPage() {
                   <Mail className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                   <div>
                     <h3 className="font-medium">Email</h3>
-                    <p className="text-sm text-muted-foreground">placement@nith.ac.in</p>
+                    
                     <p className="text-sm text-muted-foreground">tpo@nith.ac.in</p>
                   </div>
                 </div>
@@ -67,8 +67,8 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-medium">Office Hours</h3>
                     <p className="text-sm text-muted-foreground">Monday to Friday: 9:00 AM - 5:00 PM</p>
-                    <p className="text-sm text-muted-foreground">Saturday: 9:00 AM - 1:00 PM</p>
-                    <p className="text-sm text-muted-foreground">Closed on Sundays and Public Holidays</p>
+                    
+                    <p className="text-sm text-muted-foreground">Closed on Saturdays & Sundays, and Public Holidays</p>
                   </div>
                 </div>
               </CardContent>
@@ -81,25 +81,20 @@ export default function ContactPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h3 className="font-medium">Prof. Rajneesh Sharma</h3>
+                  <h3 className="font-medium">Dr. Somesh Sharma</h3>
                   <p className="text-sm text-muted-foreground">Training and Placement Officer</p>
-                  <p className="text-sm text-muted-foreground">Email: tpo@nith.ac.in</p>
-                  <p className="text-sm text-muted-foreground">Phone: +91-1972-254035</p>
+                  <p className="text-sm text-muted-foreground">Email: somesh@nith.ac.in</p>
+                 
                 </div>
 
                 <div>
-                  <h3 className="font-medium">Dr. Vinod Kumar</h3>
+                  <h3 className="font-medium">Dr. Vivek Tiwari</h3>
                   <p className="text-sm text-muted-foreground">Faculty Coordinator, Placements</p>
-                  <p className="text-sm text-muted-foreground">Email: vinod@nith.ac.in</p>
-                  <p className="text-sm text-muted-foreground">Phone: +91-1972-254036</p>
+                  <p className="text-sm text-muted-foreground">Email: vivek.dms@nith.ac.in</p>
+                  
                 </div>
 
-                <div>
-                  <h3 className="font-medium">Ms. Anjali Sharma</h3>
-                  <p className="text-sm text-muted-foreground">Administrative Assistant</p>
-                  <p className="text-sm text-muted-foreground">Email: admin.placement@nith.ac.in</p>
-                  <p className="text-sm text-muted-foreground">Phone: +91-1972-254037</p>
-                </div>
+               
               </CardContent>
             </Card>
 
