@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight, BookOpen, Users, Building, Award } from "lucide-react"
 
 export const metadata: Metadata = {
-  title: "About | NIT Hamirpur Placement Portal",
+  title: "About | NITH Career Compass",
   description:
-    "Learn about the NIT Hamirpur Placement and Training Cell and our mission to help students in their career journey",
+    "Learn about the NIT Hamirpur Training and Placement Cell and our mission to help students in their career journey",
 }
 
 export default function AboutPage() {
@@ -17,7 +17,7 @@ export default function AboutPage() {
     <div className="container px-4 md:px-6 py-8 md:py-12">
       <div className="flex flex-col gap-8">
         <div className="space-y-4">
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">About NIT Hamirpur Placement Portal</h1>
+          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">About NITH Career Compass</h1>
           <p className="text-muted-foreground">
             Connecting students with alumni experiences to foster better career preparation
           </p>
@@ -27,7 +27,7 @@ export default function AboutPage() {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Our Mission</h2>
             <p>
-              The NIT Hamirpur Placement Portal is dedicated to bridging the gap between current students and alumni by
+              NITH Career Compass is dedicated to bridging the gap between current students and alumni by
               providing a platform for sharing placement experiences, insights, and preparation strategies.
             </p>
             <p>
@@ -94,11 +94,11 @@ export default function AboutPage() {
         <Separator />
 
         <div className="space-y-6">
-          <h2 className="text-2xl font-bold">Placement and Training Cell</h2>
+          <h2 className="text-2xl font-bold">Training and Placement Cell</h2>
           <div className="grid gap-8 md:grid-cols-2">
             <div>
               <p>
-                The Placement and Training Cell at NIT Hamirpur works tirelessly to connect students with industry
+                The Training and Placement Cell at NIT Hamirpur works tirelessly to connect students with industry
                 opportunities. Our dedicated team:
               </p>
               <ul className="list-disc list-inside mt-4 space-y-2">
@@ -116,7 +116,7 @@ export default function AboutPage() {
                 organizations in India and abroad.
               </p>
               <p className="mt-4">
-                The Placement Portal is our latest initiative to leverage the power of alumni experiences to better
+                NITH Career Compass is our latest initiative to leverage the power of alumni experiences to better
                 prepare current students for their placement journey.
               </p>
             </div>
