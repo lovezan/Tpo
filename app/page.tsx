@@ -34,7 +34,7 @@ export default function Home() {
                   </div>
                 </div>
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
-                  Learn from the Success Stories of Your Seniors
+                Leverage the Experience of Those Who Came Before You
                 </h1>
                 <p className="max-w-[600px] text-muted-foreground md:text-xl">
                   Discover placement experiences, interview insights, and preparation strategies from NIT Hamirpur
