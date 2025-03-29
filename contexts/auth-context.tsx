@@ -148,8 +148,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (email: string, password: string) => {
     try {
       // Validate email domain
-      if (!email.endsWith("@nith.ac.in")) {
-        throw new Error("Please use your NIT Hamirpur email (@nith.ac.in)")
+      if (!email.endsWith("@nith.ac.in") && !email.includes("@gmail.com")) {
+        throw new Error("Please use your NIT Hamirpur email (@nith.ac.in) or a Gmail account")
       }
 
       setLoading(true)
@@ -161,11 +161,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Send email verification
       await sendEmailVerification(firebaseUser)
 
+      // Extract display name from email (part before @)
+      const displayName = email.split("@")[0]
+
       // Create user document in Firestore
       try {
         await setDoc(doc(db, "users", firebaseUser.uid), {
           email: firebaseUser.email,
-          displayName: email.split("@")[0], // Use part before @ as display name
+          displayName: displayName, // Use part before @ as display name
           role: "student", // Default role
           createdAt: serverTimestamp(),
         })
