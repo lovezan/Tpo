@@ -43,7 +43,7 @@ export default function RegisterPage() {
     if (!email.endsWith("@nith.ac.in") && !email.includes("@gmail.com")) {
       toast({
         title: "Invalid Email",
-        description: "Please use your NITH email address (@nith.ac.in).",
+        description: "Please use your NITH email address (@nith.ac.in) or a Gmail account.",
         variant: "destructive",
       })
       return
@@ -51,7 +51,7 @@ export default function RegisterPage() {
 
     try {
       setIsSubmitting(true)
-      await register(name, email, password)
+      await register(email, password) // Changed from register(name, email, password)
 
       // Redirect to login page with a success message
       router.push("/auth/login?registered=true")

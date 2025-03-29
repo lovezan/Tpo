@@ -92,7 +92,7 @@ export default function Home() {
             </div>
             <div className="hidden md:flex md:justify-center">
               <Image
-                src="/placeholder.svg?height=500&width=500"
+                src="/nith.png"
                 alt="Students celebrating placement success"
                 width={500}
                 height={500}
