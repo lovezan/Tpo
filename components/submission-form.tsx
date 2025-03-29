@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -18,6 +18,8 @@ import { AlertCircle, CheckCircle2, Upload, Search, User, Building, FileText, Li
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { saveExperienceToFirestore } from "@/lib/firebase"
 import { getCompaniesFromFirestore } from "@/lib/firebase"
+import { uploadImageToStorage } from "@/lib/firebase" // Import the new function
+import { useAuth } from "@/contexts/auth-context"
 
 // Add this after other imports
 import { PlusCircle, Trash2 } from "lucide-react"
@@ -155,6 +157,11 @@ export default function SubmissionForm() {
   const [companies, setCompanies] = useState<string[]>([])
   const yearOptions = generateYearOptions()
   const isMobile = useMediaQuery("(max-width: 640px)")
+  const { user } = useAuth()
+
+  // Add refs for file inputs
+  const profilePictureRef = useRef<HTMLInputElement>(null)
+  const companyLogoRef = useRef<HTMLInputElement>(null)
 
   // Add this inside the SubmissionForm component
   const [resources, setResources] = useState([{ title: "", url: "" }])
@@ -231,6 +238,44 @@ export default function SubmissionForm() {
       // Create an excerpt from the preparation strategy
       const excerpt = values.preparationStrategy.substring(0, 200) + "..."
 
+      // Handle file uploads
+      let profileImageUrl = "/placeholder.svg?height=100&width=100"
+      let companyLogoUrl = "/placeholder.svg?height=40&width=40"
+
+      // Upload profile picture if provided
+      if (profilePictureRef.current?.files?.length) {
+        const file = profilePictureRef.current.files[0]
+        try {
+          const uploadPath = `profile-pictures/${Date.now()}_${file.name}`
+          profileImageUrl = await uploadImageToStorage(file, uploadPath)
+          console.log("Profile picture uploaded:", profileImageUrl)
+        } catch (error) {
+          console.error("Error uploading profile picture:", error)
+          toast({
+            title: "Upload Error",
+            description: "Failed to upload profile picture. Using placeholder instead.",
+            variant: "destructive",
+          })
+        }
+      }
+
+      // Upload company logo if provided
+      if (companyLogoRef.current?.files?.length) {
+        const file = companyLogoRef.current.files[0]
+        try {
+          const uploadPath = `company-logos/${values.company.replace(/\s+/g, "-").toLowerCase()}_${Date.now()}_${file.name}`
+          companyLogoUrl = await uploadImageToStorage(file, uploadPath)
+          console.log("Company logo uploaded:", companyLogoUrl)
+        } catch (error) {
+          console.error("Error uploading company logo:", error)
+          toast({
+            title: "Upload Error",
+            description: "Failed to upload company logo. Using placeholder instead.",
+            variant: "destructive",
+          })
+        }
+      }
+
       // Create a new experience object
       const newExperience = {
         id: Date.now(),
@@ -241,8 +286,8 @@ export default function SubmissionForm() {
         year: Number.parseInt(values.placementYear),
         type: getPlacementTypeName(values.placementType),
         excerpt,
-        profileImage: "/placeholder.svg?height=100&width=100",
-        companyLogo: "/placeholder.svg?height=40&width=40",
+        profileImage: profileImageUrl,
+        companyLogo: companyLogoUrl,
         status: "pending" as const,
         email: values.email,
         role: values.role,
@@ -256,6 +301,8 @@ export default function SubmissionForm() {
         linkedIn: values.linkedIn || "",
         github: values.github || "",
         personalEmail: values.personalEmail || "",
+        uid: user?.uid || null, // Add the user's UID if they're logged in
+        submittedAt: new Date().toISOString(),
       }
 
       console.log("Saving experience to Firestore:", newExperience)
@@ -574,7 +621,7 @@ export default function SubmissionForm() {
                       <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
                         <Upload className="h-6 w-6 text-muted-foreground" />
                       </div>
-                      <Input id="profilePicture" type="file" accept="image/*" />
+                      <Input id="profilePicture" type="file" accept="image/*" ref={profilePictureRef} />
                     </div>
                   </div>
                 </div>
@@ -714,7 +761,7 @@ export default function SubmissionForm() {
 
                 <div className="space-y-2">
                   <Label htmlFor="companyLogo">Company Logo (Optional)</Label>
-                  <Input id="companyLogo" type="file" accept="image/*" />
+                  <Input id="companyLogo" type="file" accept="image/*" ref={companyLogoRef} />
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">

@@ -5,8 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Building, Briefcase, Users, Award } from "lucide-react"
 import { getPlacementStats } from "@/lib/data-utils"
 import { Skeleton } from "@/components/ui/skeleton"
-// Add import for the responsive hook
-import { useResponsive } from "@/hooks/use-responsive"
 
 export default function StatsSection() {
   const [stats, setStats] = useState({
@@ -16,9 +14,6 @@ export default function StatsSection() {
     highestPackage: "₹0 LPA",
   })
   const [isLoading, setIsLoading] = useState(true)
-
-  // Inside the component, add this after the useState hooks:
-  const { isSmallScreen } = useResponsive()
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -37,65 +32,75 @@ export default function StatsSection() {
   }, [])
 
   return (
-    <section className="container px-4 md:px-6 py-6 md:py-8">
-      <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4 md:mb-6">Placement Highlights</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Experiences</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+    <section className="container px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight mb-3 sm:mb-4 md:mb-6">
+        Placement Highlights
+      </h2>
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+        <Card className="overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-4 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Total Experiences</CardTitle>
+            <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          {/* Update the card content to be more responsive based on screen size */}
-          <CardContent>
+          <CardContent className="p-2 sm:p-4 pt-0 sm:pt-0">
             {isLoading ? (
-              <Skeleton className="h-8 w-20" />
+              <Skeleton className="h-6 sm:h-8 w-16 sm:w-20" />
             ) : (
               <>
-                <div className="text-xl sm:text-2xl font-bold truncate">{stats.totalExperiences}+</div>
-                <p className={`${isSmallScreen ? "text-[10px]" : "text-xs"} text-muted-foreground`}>Shared by alumni</p>
+                <div className="text-lg sm:text-xl md:text-2xl font-bold truncate">{stats.totalExperiences}+</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Shared by alumni</p>
               </>
             )}
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Companies</CardTitle>
-            <Building className="h-4 w-4 text-muted-foreground" />
+        <Card className="overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-4 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Companies</CardTitle>
+            <Building className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          {/* Do the same for the other card contents */}
-          <CardContent>
+          <CardContent className="p-2 sm:p-4 pt-0 sm:pt-0">
             {isLoading ? (
-              <Skeleton className="h-8 w-20" />
+              <Skeleton className="h-6 sm:h-8 w-16 sm:w-20" />
             ) : (
               <>
-                <div className="text-xl sm:text-2xl font-bold truncate">{stats.totalCompanies}+</div>
-                <p className={`${isSmallScreen ? "text-[10px]" : "text-xs"} text-muted-foreground`}>
-                  Recruiting from campus
-                </p>
+                <div className="text-lg sm:text-xl md:text-2xl font-bold truncate">{stats.totalCompanies}+</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Recruiting from campus</p>
               </>
             )}
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Job Profiles</CardTitle>
-            <Briefcase className="h-4 w-4 text-muted-foreground" />
+        <Card className="overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-4 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Job Profiles</CardTitle>
+            <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          {/* Do the same for the other card contents */}
-          <CardContent>
+          <CardContent className="p-2 sm:p-4 pt-0 sm:pt-0">
             {isLoading ? (
-              <Skeleton className="h-8 w-20" />
+              <Skeleton className="h-6 sm:h-8 w-16 sm:w-20" />
             ) : (
               <>
-                <div className="text-xl sm:text-2xl font-bold truncate">{stats.jobProfiles}+</div>
-                <p className={`${isSmallScreen ? "text-[10px]" : "text-xs"} text-muted-foreground`}>
-                  Diverse opportunities
-                </p>
+                <div className="text-lg sm:text-xl md:text-2xl font-bold truncate">{stats.jobProfiles}+</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Diverse opportunities</p>
               </>
             )}
           </CardContent>
         </Card>
-        
+        <Card className="overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-4 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Highest Package</CardTitle>
+            <Award className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="p-2 sm:p-4 pt-0 sm:pt-0">
+            {isLoading ? (
+              <Skeleton className="h-6 sm:h-8 w-16 sm:w-20" />
+            ) : (
+              <>
+                <div className="text-lg sm:text-xl md:text-2xl font-bold truncate">{stats.highestPackage}</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">2023 placement season</p>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </section>
   )

@@ -65,7 +65,7 @@ export default function ContactForm() {
       action="https://formsubmit.co/talibhassan1122@gmail.com"
       method="POST"
       onSubmit={handleSubmit}
-      className="space-y-4"
+      className="space-y-4 w-full"
     >
       {/* Honeypot field to prevent spam */}
       <input type="text" name="_honey" style={{ display: "none" }} />
