@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
+// Remove Link import if it's not used elsewhere in the file
 import Image from "next/image"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -178,9 +178,6 @@ export default function CompanyList() {
               <span className="text-muted-foreground">Experiences Shared:</span>
               <span className="font-medium">{company.experiencesCount || 0}</span>
             </div>
-            <Button asChild className="w-full mt-4">
-              <Link href={`/companies/${company.id}`}>View Details</Link>
-            </Button>
           </CardContent>
         </Card>
       ))}

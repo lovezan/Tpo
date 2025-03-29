@@ -85,22 +85,7 @@ export default function StatsSection() {
             )}
           </CardContent>
         </Card>
-        <Card className="overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-4 sm:pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium">Highest Package</CardTitle>
-            <Award className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="p-2 sm:p-4 pt-0 sm:pt-0">
-            {isLoading ? (
-              <Skeleton className="h-6 sm:h-8 w-16 sm:w-20" />
-            ) : (
-              <>
-                <div className="text-lg sm:text-xl md:text-2xl font-bold truncate">{stats.highestPackage}</div>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">2023 placement season</p>
-              </>
-            )}
-          </CardContent>
-        </Card>
+     
       </div>
     </section>
   )
