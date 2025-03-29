@@ -34,10 +34,10 @@ export default function Home() {
                   </div>
                 </div>
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl xl:text-6xl/none nith-theme:text-[#660000]">
-                Leverage the Experience of Those Who Came Before You
+                 Leverage the Experience of Those Who Came Before You
                 </h1>
                 <p className="max-w-[600px] text-muted-foreground md:text-xl nith-theme:text-[#660000]/80">
-                Discover placement experiences, interview insights, and preparation strategies from NIT Hamirpur
+                  Discover placement experiences, interview insights, and preparation strategies from NIT Hamirpur
                 alumni.
                 </p>
               </div>
@@ -45,10 +45,10 @@ export default function Home() {
                 <Button
                   asChild
                   size="lg"
-                  className="h-12 nith-theme:bg-[#660000] nith-theme:text-[#FCF1B1] nith-theme:border-[#660000] nith-theme:hover:bg-[#990000]"
+                  className="h-12 text-xs sm:text-sm nith-theme:bg-[#660000] nith-theme:text-[#FCF1B1] nith-theme:border-[#660000] nith-theme:hover:bg-[#990000]"
                 >
                   <Link href="/experiences">
-                    <Search className="h-4 w-4 mr-2" />
+                    <Search className="h-4 w-4 mr-1 sm:mr-2" />
                     Browse Experiences
                   </Link>
                 </Button>
@@ -56,10 +56,10 @@ export default function Home() {
                   asChild
                   variant="outline"
                   size="lg"
-                  className="h-12 nith-theme:border-[#A52A2A] nith-theme:text-[#660000] nith-theme:hover:bg-[#A52A2A]/10 nith-theme:hover:border-[#990000]"
+                  className="h-12 text-xs sm:text-sm nith-theme:border-[#A52A2A] nith-theme:text-[#660000] nith-theme:hover:bg-[#A52A2A]/10 nith-theme:hover:border-[#990000]"
                 >
                   <Link href="/submit">
-                    <Users className="h-4 w-4 mr-2" />
+                    <Users className="h-4 w-4 mr-1 sm:mr-2" />
                     Share Your Story
                   </Link>
                 </Button>
@@ -67,24 +67,24 @@ export default function Home() {
                   asChild
                   variant="outline"
                   size="lg"
-                  className="h-12 nith-theme:border-[#A52A2A] nith-theme:text-[#660000] nith-theme:hover:bg-[#A52A2A]/10 nith-theme:hover:border-[#990000]"
+                  className="h-12 text-xs sm:text-sm nith-theme:border-[#A52A2A] nith-theme:text-[#660000] nith-theme:hover:bg-[#A52A2A]/10 nith-theme:hover:border-[#990000]"
                 >
                   <a
                     href="https://www.overleaf.com/latex/templates/tagged/cv"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <FileText className="h-4 w-4 mr-2" />
+                    <FileText className="h-4 w-4 mr-1 sm:mr-2" />
                     Resume Builder
                   </a>
                 </Button>
                 <Button
                   asChild
                   size="lg"
-                  className="h-12 nith-theme:bg-[#660000] nith-theme:text-[#FCF1B1] nith-theme:border-[#660000] nith-theme:hover:bg-[#990000]"
+                  className="h-12 text-xs sm:text-sm nith-theme:bg-[#660000] nith-theme:text-[#FCF1B1] nith-theme:border-[#660000] nith-theme:hover:bg-[#990000]"
                 >
                   <Link href="/resources">
-                    <BookOpen className="h-4 w-4 mr-2" />
+                    <BookOpen className="h-4 w-4 mr-1 sm:mr-2" />
                     Resources
                   </Link>
                 </Button>
