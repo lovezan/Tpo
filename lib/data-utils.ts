@@ -36,25 +36,52 @@ export type Admin = {
 // Function to get experiences
 export async function getExperiences(): Promise<Experience[]> {
   try {
+    console.log("Fetching experiences for all users")
     const experiences = await getExperiencesFromFirestore()
+    console.log(`Retrieved ${experiences.length} total experiences from Firestore`)
 
-    // Check if user is admin
+    // Check if user is admin or authenticated
     const isAdmin = checkIfUserIsAdmin()
+    const isAuthenticated = checkIfUserIsAuthenticated()
+    console.log(`User is admin: ${isAdmin}, User is authenticated: ${isAuthenticated}`)
 
-    // If user is admin, return all experiences, otherwise filter to show only approved ones
+    // If user is admin, return all experiences
     if (isAdmin) {
+      console.log("Admin user - returning all experiences")
       return experiences.length > 0 ? experiences : getMockExperiences()
-    } else {
+    }
+    // If user is authenticated but not admin, return all approved experiences and their own pending/rejected experiences
+    else if (isAuthenticated) {
+      console.log("Authenticated user - returning approved experiences and user's own submissions")
+      // We can't filter by user ID here since we don't have access to the user object
+      // This filtering will be done in the component
+      return experiences.length > 0 ? experiences : getMockExperiences()
+    }
+    // For non-authenticated users, only return approved experiences
+    else {
+      console.log("Regular user - returning only approved experiences")
       const approvedExperiences = experiences.filter((exp) => exp.status === "approved")
-      return approvedExperiences.length > 0
-        ? approvedExperiences
-        : getMockExperiences().filter((exp) => exp.status === "approved")
+      console.log(`Filtered to ${approvedExperiences.length} approved experiences for regular user`)
+
+      // If no approved experiences, return approved mock experiences
+      if (approvedExperiences.length === 0) {
+        const approvedMockExperiences = getMockExperiences().filter((exp) => exp.status === "approved")
+        console.log(
+          `No approved experiences found, returning ${approvedMockExperiences.length} approved mock experiences`,
+        )
+        return approvedMockExperiences
+      }
+
+      return approvedExperiences
     }
   } catch (error) {
     console.error("Error getting experiences:", error)
     // Return mock data if Firebase fails, but only approved experiences for non-admin users
     const isAdmin = checkIfUserIsAdmin()
+    const isAuthenticated = checkIfUserIsAuthenticated()
     if (isAdmin) {
+      return getMockExperiences()
+    } else if (isAuthenticated) {
       return getMockExperiences()
     } else {
       return getMockExperiences().filter((exp) => exp.status === "approved")
@@ -284,11 +311,15 @@ export async function getPlacementStats(): Promise<{
 // Function to get featured experiences
 export async function getFeaturedExperiences(limit = 3): Promise<Experience[]> {
   try {
+    console.log("Fetching featured experiences for all users")
+
     // Get all experiences
     const allExperiences = await getExperiences()
+    console.log(`Got ${allExperiences.length} total experiences`)
 
     // Filter for approved experiences only
     const approvedExperiences = allExperiences.filter((exp) => exp.status === "approved")
+    console.log(`Filtered to ${approvedExperiences.length} approved experiences`)
 
     // Sort by submission date (newest first)
     const sortedExperiences = approvedExperiences.sort((a, b) => {
@@ -298,11 +329,17 @@ export async function getFeaturedExperiences(limit = 3): Promise<Experience[]> {
     })
 
     // Return the top experiences based on limit
-    return sortedExperiences.slice(0, limit)
+    const result = sortedExperiences.slice(0, limit)
+    console.log(`Returning ${result.length} featured experiences`)
+    return result
   } catch (error) {
     console.error("Error getting featured experiences:", error)
     // Return mock data if there's an error
-    return getMockExperiences().slice(0, limit)
+    const mockExperiences = getMockExperiences()
+      .filter((exp) => exp.status === "approved")
+      .slice(0, limit)
+    console.log(`Returning ${mockExperiences.length} mock featured experiences due to error`)
+    return mockExperiences
   }
 }
 
@@ -436,10 +473,32 @@ function getMockCompanies(): Company[] {
 // Helper function to check if current user is admin
 function checkIfUserIsAdmin(): boolean {
   try {
+    // For server-side rendering or when localStorage is not available
+    if (typeof window === "undefined" || !window.localStorage) {
+      return false
+    }
+
     const adminData = localStorage.getItem("currentAdmin")
     return !!adminData
   } catch (error) {
     console.error("Error checking admin status:", error)
+    return false
+  }
+}
+
+// Helper function to check if current user is authenticated
+function checkIfUserIsAuthenticated(): boolean {
+  try {
+    // For server-side rendering or when localStorage is not available
+    if (typeof window === "undefined" || !window.localStorage) {
+      return false
+    }
+
+    // Check if Firebase Auth has a current user
+    const currentUser = localStorage.getItem("firebase:authUser")
+    return !!currentUser
+  } catch (error) {
+    console.error("Error checking authentication status:", error)
     return false
   }
 }

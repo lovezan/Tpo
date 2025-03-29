@@ -247,7 +247,14 @@ export default function ResourcesPage() {
 
        
 
-        
+        <div className="bg-muted p-6 rounded-lg mt-4">
+          <h2 className="text-xl font-bold mb-4">Resource Contributions</h2>
+          <p className="text-muted-foreground mb-4">
+            We're constantly updating our resources. If you have valuable materials to share with the NIT Hamirpur
+            community, please consider contributing.
+          </p>
+          <Button>Contribute Resources</Button>
+        </div>
       </div>
     </div>
   )

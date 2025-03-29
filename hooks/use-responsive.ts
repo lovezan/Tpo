@@ -2,64 +2,29 @@
 
 import { useState, useEffect } from "react"
 
-type Breakpoint = "xs" | "sm" | "md" | "lg" | "xl"
-
-export function useResponsive() {
-  const [breakpoint, setBreakpoint] = useState<Breakpoint>("xs")
-  const [isMobile, setIsMobile] = useState(false)
-  const [isTablet, setIsTablet] = useState(false)
-  const [isDesktop, setIsDesktop] = useState(false)
+export function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false)
 
   useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth
+    const mediaQuery = window.matchMedia(query)
 
-      if (width < 640) {
-        setBreakpoint("xs")
-        setIsMobile(true)
-        setIsTablet(false)
-        setIsDesktop(false)
-      } else if (width >= 640 && width < 768) {
-        setBreakpoint("sm")
-        setIsMobile(false)
-        setIsTablet(true)
-        setIsDesktop(false)
-      } else if (width >= 768 && width < 1024) {
-        setBreakpoint("md")
-        setIsMobile(false)
-        setIsTablet(true)
-        setIsDesktop(false)
-      } else if (width >= 1024 && width < 1280) {
-        setBreakpoint("lg")
-        setIsMobile(false)
-        setIsTablet(false)
-        setIsDesktop(true)
-      } else {
-        setBreakpoint("xl")
-        setIsMobile(false)
-        setIsTablet(false)
-        setIsDesktop(true)
-      }
+    // Set initial value
+    setMatches(mediaQuery.matches)
+
+    // Function to handle changes
+    const handleChange = () => {
+      setMatches(mediaQuery.matches)
     }
 
-    // Set initial values
-    handleResize()
-
-    // Add event listener
-    window.addEventListener("resize", handleResize)
+    // Add listener
+    mediaQuery.addEventListener("change", handleChange)
 
     // Clean up
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange)
+    }
+  }, [query])
 
-  return {
-    breakpoint,
-    isMobile,
-    isTablet,
-    isDesktop,
-    isSmallScreen: breakpoint === "xs" || breakpoint === "sm",
-    isMediumScreen: breakpoint === "md",
-    isLargeScreen: breakpoint === "lg" || breakpoint === "xl",
-  }
+  return matches
 }
 

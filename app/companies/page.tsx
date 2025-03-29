@@ -1,6 +1,11 @@
 import type { Metadata } from "next"
 import CompanyList from "@/components/company-list"
 import CompanySearch from "@/components/company-search"
+import AuthGuard from "@/components/auth-guard"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Lock } from "lucide-react"
+import Link from "next/link"
 
 export const metadata: Metadata = {
   title: "Companies | NIT Hamirpur",
@@ -16,8 +21,33 @@ export default function CompaniesPage() {
           <p className="text-muted-foreground">Search and explore companies that recruit from NIT Hamirpur</p>
         </div>
 
-        <CompanySearch />
-        <CompanyList />
+        {/* Preview for non-authenticated users */}
+        <Card className="mb-6">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Lock className="h-5 w-5 text-primary" />
+              <CardTitle>Authentication Required</CardTitle>
+            </div>
+            <CardDescription>Login to access detailed company information and placement statistics</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              This section contains valuable information about companies that recruit from NIT Hamirpur, including
+              placement statistics, interview processes, and student experiences.
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Button asChild>
+              <Link href={`/auth/login?redirectTo=${encodeURIComponent("/companies")}`}>Login to Access</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Protected content */}
+        <AuthGuard returnUrl="/companies">
+          <CompanySearch />
+          <CompanyList />
+        </AuthGuard>
       </div>
     </div>
   )

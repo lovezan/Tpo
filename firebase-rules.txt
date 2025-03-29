@@ -1,23 +1,40 @@
-// Firestore Rules
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Allow anyone to read approved experiences
     match /experiences/{experienceId} {
+      // Allow anyone to read approved experiences
+      // Allow authenticated users to read all experiences
       allow read: if resource.data.status == 'approved' || request.auth != null;
-      allow create: if true; // Allow anyone to submit an experience
-      allow update, delete: if request.auth != null; // Only authenticated users can update/delete
+      
+      // Allow anyone to submit an experience
+      allow create: if true;
+      
+      // Allow users to update/delete their own experiences
+      // Allow admins to update/delete any experience
+      allow update, delete: if request.auth != null && (
+        resource.data.uid == request.auth.uid || 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
     }
     
     // Allow anyone to read companies
     match /companies/{companyId} {
       allow read: if true;
-      allow write: if request.auth != null; // Only authenticated users can write
+      
+      // Only admins can write to companies
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
-    // Only authenticated users can access admin documents
-    match /admins/{adminId} {
-      allow read, write: if request.auth != null && request.auth.uid == adminId;
+    // User profiles - IMPORTANT: Allow users to create and update their own profiles
+    match /users/{userId} {
+      // Allow users to read, create and update their own profiles
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow admins to read and write any user profile
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
   }
 }

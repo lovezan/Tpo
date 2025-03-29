@@ -13,6 +13,7 @@ import {
   deleteDoc,
   serverTimestamp,
 } from "firebase/firestore"
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage" // Add these imports
 
 // Add this import at the top if not already present
 import type { Experience } from "@/components/experience-list"
@@ -30,13 +31,38 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
 const db = getFirestore(app)
+const storage = getStorage(app) // Initialize Firebase Storage
+
+// Add this function to handle image uploads
+export async function uploadImageToStorage(file: File, path: string): Promise<string> {
+  try {
+    console.log(`Uploading file to ${path}`)
+    const storageRef = ref(storage, path)
+
+    // Upload the file
+    const snapshot = await uploadBytes(storageRef, file)
+    console.log("File uploaded successfully")
+
+    // Get the download URL
+    const downloadURL = await getDownloadURL(snapshot.ref)
+    console.log("Download URL:", downloadURL)
+
+    return downloadURL
+  } catch (error) {
+    console.error("Error uploading file:", error)
+    throw error
+  }
+}
 
 // Function to get experiences from Firestore
 export async function getExperiencesFromFirestore(): Promise<Experience[]> {
   try {
-    console.log("Fetching experiences from Firestore")
+    console.log("Fetching experiences from Firestore for all users")
     const experiencesRef = collection(db, "experiences")
+
+    // Get all experiences without filtering by status
     const experiencesSnapshot = await getDocs(experiencesRef)
+    console.log(`Retrieved ${experiencesSnapshot.size} experiences from Firestore`)
 
     const experiences: Experience[] = []
     experiencesSnapshot.forEach((doc) => {
@@ -63,14 +89,15 @@ export async function getExperiencesFromFirestore(): Promise<Experience[]> {
         resources: data.resources || [],
         role: data.role || "",
         submittedAt: data.submittedAt ? new Date(data.submittedAt.toDate()).toISOString() : new Date().toISOString(),
+        package: data.package || "",
       })
     })
 
-    console.log(`Retrieved ${experiences.length} experiences`)
+    console.log(`Processed ${experiences.length} experiences from Firestore`)
     return experiences
   } catch (error) {
-    console.error("Error getting experiences:", error)
-    return []
+    console.error("Error getting experiences from Firestore:", error)
+    return [] // Return empty array instead of throwing error
   }
 }
 
@@ -81,15 +108,36 @@ export async function getCompaniesFromFirestore(): Promise<Company[]> {
     const companiesRef = collection(db, "companies")
     const companiesSnapshot = await getDocs(companiesRef)
 
+    // Get all approved experiences to count by company
+    const experiencesRef = collection(db, "experiences")
+    const q = query(experiencesRef, where("status", "==", "approved"))
+    const experiencesSnapshot = await getDocs(q)
+
+    // Create a map to count experiences by company
+    const experienceCountByCompany = new Map<string, number>()
+
+    experiencesSnapshot.forEach((doc) => {
+      const data = doc.data()
+      const companyName = data.company || ""
+
+      if (companyName) {
+        const currentCount = experienceCountByCompany.get(companyName) || 0
+        experienceCountByCompany.set(companyName, currentCount + 1)
+      }
+    })
+
     const companies: Company[] = []
     companiesSnapshot.forEach((doc) => {
       const data = doc.data()
+      const companyName = data.name || ""
+
       companies.push({
         id: data.id || Date.now(),
-        name: data.name || "",
+        name: companyName,
         logo: data.logo || "/placeholder.svg?height=80&width=80",
         category: data.category || "Tech",
         studentsPlaced: data.studentsPlaced || 0,
+        experiencesCount: experienceCountByCompany.get(companyName) || 0,
       })
     })
 
@@ -120,7 +168,33 @@ export async function deleteExperienceFromFirestore(id: number) {
   try {
     console.log("Deleting experience from Firestore:", id)
     const experienceRef = doc(db, "experiences", id.toString())
-    await deleteDoc(experienceRef)
+
+    // Get the experience data to check if it was approved
+    const experienceSnap = await getDoc(experienceRef)
+    if (experienceSnap.exists()) {
+      const experienceData = experienceSnap.data()
+      const companyName = experienceData.company
+      const wasApproved = experienceData.status === "approved"
+
+      // Delete the experience
+      await deleteDoc(experienceRef)
+
+      // If the experience was approved, decrement the company's experiencesCount
+      if (wasApproved && companyName) {
+        const companyRef = doc(db, "companies", companyName)
+        const companySnap = await getDoc(companyRef)
+
+        if (companySnap.exists()) {
+          const companyData = companySnap.data()
+          const currentCount = companyData.experiencesCount || 0
+
+          await updateDoc(companyRef, {
+            experiencesCount: Math.max(0, currentCount - 1),
+          })
+        }
+      }
+    }
+
     console.log("Experience deleted successfully")
     return true
   } catch (error) {
@@ -175,11 +249,18 @@ export async function addOrUpdateCompanyInFirestore(
     const companyRef = doc(db, "companies", companyName)
     const companySnap = await getDoc(companyRef)
 
+    // Get the current count of approved experiences for this company
+    const experiencesRef = collection(db, "experiences")
+    const q = query(experiencesRef, where("company", "==", companyName), where("status", "==", "approved"))
+    const experiencesSnapshot = await getDocs(q)
+    const experiencesCount = experiencesSnapshot.size
+
     if (companySnap.exists()) {
       // Update the company if it exists
       await updateDoc(companyRef, {
         logo: companyLogo,
         category: companyType,
+        experiencesCount: experiencesCount,
       })
       console.log("Company updated successfully")
     } else {
@@ -189,6 +270,7 @@ export async function addOrUpdateCompanyInFirestore(
         logo: companyLogo,
         category: companyType,
         studentsPlaced: 0, // Initialize studentsPlaced
+        experiencesCount: experiencesCount,
       })
       console.log("Company added successfully")
     }
@@ -204,9 +286,34 @@ export async function approveExperienceInFirestore(id: number) {
   try {
     console.log("Approving experience in Firestore:", id)
     const experienceRef = doc(db, "experiences", id.toString())
-    await updateDoc(experienceRef, {
-      status: "approved",
-    })
+
+    // Get the experience data to get the company name
+    const experienceSnap = await getDoc(experienceRef)
+    if (experienceSnap.exists()) {
+      const experienceData = experienceSnap.data()
+      const companyName = experienceData.company
+
+      // Update the experience status
+      await updateDoc(experienceRef, {
+        status: "approved",
+      })
+
+      // Update the company's experiencesCount
+      if (companyName) {
+        const companyRef = doc(db, "companies", companyName)
+        const companySnap = await getDoc(companyRef)
+
+        if (companySnap.exists()) {
+          const companyData = companySnap.data()
+          const currentCount = companyData.experiencesCount || 0
+
+          await updateDoc(companyRef, {
+            experiencesCount: currentCount + 1,
+          })
+        }
+      }
+    }
+
     console.log("Experience approved successfully")
     return true
   } catch (error) {
@@ -220,9 +327,35 @@ export async function rejectExperienceInFirestore(id: number) {
   try {
     console.log("Rejecting experience in Firestore:", id)
     const experienceRef = doc(db, "experiences", id.toString())
-    await updateDoc(experienceRef, {
-      status: "rejected",
-    })
+
+    // Get the experience data to check if it was previously approved
+    const experienceSnap = await getDoc(experienceRef)
+    if (experienceSnap.exists()) {
+      const experienceData = experienceSnap.data()
+      const companyName = experienceData.company
+      const wasApproved = experienceData.status === "approved"
+
+      // Update the experience status
+      await updateDoc(experienceRef, {
+        status: "rejected",
+      })
+
+      // If the experience was previously approved, decrement the company's experiencesCount
+      if (wasApproved && companyName) {
+        const companyRef = doc(db, "companies", companyName)
+        const companySnap = await getDoc(companyRef)
+
+        if (companySnap.exists()) {
+          const companyData = companySnap.data()
+          const currentCount = companyData.experiencesCount || 0
+
+          await updateDoc(companyRef, {
+            experiencesCount: Math.max(0, currentCount - 1),
+          })
+        }
+      }
+    }
+
     console.log("Experience rejected successfully")
     return true
   } catch (error) {
@@ -352,4 +485,6 @@ export async function saveExperienceToFirestore(experience: Experience) {
     throw error
   }
 }
+
+export { auth, db }
 

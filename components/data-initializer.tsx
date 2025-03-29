@@ -14,17 +14,21 @@ export default function DataInitializer() {
 
     const initializeData = async () => {
       try {
-        console.log("Checking Firebase connection...")
+        console.log("Initializing data - checking Firebase connection...")
 
-        // Instead of trying to write data, just check if we can read data
-        // This is less likely to trigger permission errors
-        await Promise.all([getExperiences(), getCompanies()])
+        // Pre-fetch both experiences and companies to warm up the cache
+        const experiencesPromise = getExperiences()
+        const companiesPromise = getCompanies()
 
-        console.log("Firebase connection successful")
+        // Wait for both to complete
+        const [experiences, companies] = await Promise.all([experiencesPromise, companiesPromise])
+
+        console.log(
+          `Firebase connection successful - pre-loaded ${experiences.length} experiences and ${companies.length} companies`,
+        )
         localStorage.setItem("firebase_connection_verified", "true")
       } catch (error: any) {
         console.error("Error connecting to Firebase:", error)
-
         // Don't show error toast to users - just log it
         // The app will fall back to mock data
       }

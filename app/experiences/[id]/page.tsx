@@ -9,10 +9,25 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Calendar, Building, Briefcase, Linkedin, Github, Mail, Award, ExternalLink } from "lucide-react"
+import {
+  ArrowLeft,
+  Calendar,
+  Building,
+  Briefcase,
+  Linkedin,
+  Github,
+  Mail,
+  Award,
+  ExternalLink,
+  Lock,
+  Clock,
+  Shield,
+  XCircle,
+} from "lucide-react"
 import { getExperiences } from "@/lib/data-utils"
 import { toast } from "@/hooks/use-toast"
 import type { Experience } from "@/components/experience-list"
+import { useAuth } from "@/contexts/auth-context"
 
 // Function to get the company type name
 const getCompanyTypeName = (companyType: string) => {
@@ -26,46 +41,72 @@ const getCompanyTypeName = (companyType: string) => {
     case "mixed":
       return "Mixed"
     default:
-      return "Unknown"
+      return companyType.charAt(0).toUpperCase() + companyType.slice(1)
   }
 }
 
 export default function ExperiencePage() {
   const params = useParams()
   const router = useRouter()
+  const { user, isAdmin, isAuthenticated } = useAuth()
   const [experience, setExperience] = useState<Experience | null>(null)
-  const [isAdmin, setIsAdmin] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [relatedExperiences, setRelatedExperiences] = useState<Experience[]>([])
+  const [requiresAuth, setRequiresAuth] = useState(false)
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false)
 
   useEffect(() => {
     const loadExperience = async () => {
       try {
-        // Check if user is logged in as admin
-        const adminData = localStorage.getItem("currentAdmin")
-        setIsAdmin(!!adminData)
+        console.log(`ExperiencePage: Loading experience with ID ${params.id}`)
 
         // Get experience by ID
         const id = Number.parseInt(params.id as string)
         const experiences = await getExperiences()
+        console.log(`ExperiencePage: Fetched ${experiences.length} experiences to find ID ${id}`)
+
         const foundExperience = experiences.find((exp) => exp.id === id)
 
         if (foundExperience) {
-          setExperience(foundExperience)
+          console.log(`ExperiencePage: Found experience with ID ${id}, status: ${foundExperience.status}`)
 
-          // Find related experiences (same company or same student)
-          // For non-admin users, this will already be filtered to approved experiences only
-          const related = experiences
-            .filter(
-              (exp) =>
-                exp.id !== id &&
-                (exp.company === foundExperience.company || exp.studentName === foundExperience.studentName),
-            )
-            .slice(0, 3)
+          // For non-admin and non-authenticated users, we should only show approved experiences
+          if (!isAdmin && !isAuthenticated && foundExperience.status !== "approved") {
+            console.log(`ExperiencePage: Experience not approved and user is not authenticated, showing auth required`)
+            setRequiresAuth(true)
+            setShowLoginPrompt(true)
+            setExperience(foundExperience) // Still set the experience for the UI
+          }
+          // For authenticated non-admin users, they can see approved experiences and their own pending/rejected experiences
+          else if (
+            !isAdmin &&
+            isAuthenticated &&
+            foundExperience.status !== "approved" &&
+            foundExperience.uid !== user?.uid
+          ) {
+            console.log(`ExperiencePage: Experience not approved and doesn't belong to user, showing auth required`)
+            setRequiresAuth(true)
+            setExperience(foundExperience)
+          } else {
+            setExperience(foundExperience)
+            setRequiresAuth(false)
 
-          setRelatedExperiences(related)
+            // Find related experiences from same company/student that are approved
+            const related = experiences
+              .filter(
+                (exp) =>
+                  exp.id !== id &&
+                  exp.status === "approved" &&
+                  (exp.company === foundExperience.company || exp.studentName === foundExperience.studentName),
+              )
+              .slice(0, 3)
+
+            setRelatedExperiences(related)
+            console.log(`ExperiencePage: Found ${related.length} related experiences`)
+          }
         } else {
           // Redirect to experiences page if not found
+          console.log(`ExperiencePage: Experience with ID ${id} not found`)
           toast({
             title: "Experience not found",
             description: "The experience you're looking for doesn't exist or has been removed.",
@@ -87,13 +128,17 @@ export default function ExperiencePage() {
     }
 
     loadExperience()
-  }, [params.id, router])
+  }, [params.id, router, user, isAdmin, isAuthenticated])
+
+  const handleLoginRedirect = () => {
+    router.push(`/auth/login?redirectTo=/experiences/${params.id}`)
+  }
 
   if (isLoading) {
     return (
       <div className="container px-4 md:px-6 py-8 md:py-12">
         <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Loading experience details...</p>
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>
     )
@@ -107,15 +152,33 @@ export default function ExperiencePage() {
     )
   }
 
-  // Only show approved experiences to non-admin users
-  if (!isAdmin && experience.status !== "approved") {
+  // Show authentication required message
+  if (requiresAuth && showLoginPrompt) {
     return (
       <div className="container px-4 md:px-6 py-8 md:py-12">
-        <h1 className="text-2xl font-bold mb-4">Experience Not Available</h1>
-        <p>This experience is currently under review and not yet published.</p>
-        <Button asChild className="mt-4">
-          <Link href="/experiences">Back to Experiences</Link>
+        <Button asChild variant="ghost" className="mb-6">
+          <Link href="/experiences" className="flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Experiences
+          </Link>
         </Button>
+
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="bg-muted p-8 rounded-lg flex flex-col items-center gap-4">
+            <Lock className="h-12 w-12 text-primary" />
+            <h1 className="text-2xl font-bold">Authentication Required</h1>
+            <p className="text-muted-foreground mb-4">
+              This experience is only available to authenticated NIT Hamirpur students. Please login with your NITH
+              email to view this content.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button asChild variant="outline">
+                <Link href="/experiences">Browse Public Experiences</Link>
+              </Button>
+              <Button onClick={handleLoginRedirect}>Login to View</Button>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -129,10 +192,59 @@ export default function ExperiencePage() {
         </Link>
       </Button>
 
-      {experience.status === "pending" && isAdmin && (
-        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md text-yellow-800">
-          <p className="font-medium">This experience is pending approval</p>
-          <p className="text-sm">Only admins can view pending experiences</p>
+      {experience.status === "pending" && (
+        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md text-yellow-800 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-400">
+          <div className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            <div>
+              <p className="font-medium">This experience is pending approval</p>
+              {isAdmin ? (
+                <p className="text-sm">
+                  As an admin, you can review and approve this submission in the admin dashboard.
+                </p>
+              ) : (
+                <p className="text-sm">Your submission is being reviewed by an admin and will be published soon.</p>
+              )}
+            </div>
+          </div>
+          {isAdmin && (
+            <div className="mt-3">
+              <Button asChild size="sm" variant="outline" className="bg-white/50 dark:bg-black/20">
+                <Link href="/admin" className="flex items-center gap-1">
+                  <Shield className="h-3.5 w-3.5 mr-1" />
+                  <span>Go to Admin Dashboard</span>
+                </Link>
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {experience.status === "rejected" && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
+          <div className="flex items-center gap-2">
+            <XCircle className="h-5 w-5" />
+            <div>
+              <p className="font-medium">This experience has been rejected</p>
+              {isAdmin ? (
+                <p className="text-sm">As an admin, you can review this submission in the admin dashboard.</p>
+              ) : (
+                <p className="text-sm">
+                  Your submission was reviewed but not approved for publication. You may submit a new experience.
+                </p>
+              )}
+            </div>
+          </div>
+          {isAdmin && (
+            <div className="mt-3">
+              <Button asChild size="sm" variant="outline" className="bg-white/50 dark:bg-black/20">
+                <Link href="/admin" className="flex items-center gap-1">
+                  <Shield className="h-3.5 w-3.5 mr-1" />
+                  <span>Go to Admin Dashboard</span>
+                </Link>
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
@@ -168,6 +280,20 @@ export default function ExperiencePage() {
               {experience.role && (
                 <Badge variant="outline" className="text-sm bg-primary/10">
                   {experience.role}
+                </Badge>
+              )}
+              {experience.status === "pending" && (
+                <Badge
+                  variant="outline"
+                  className="text-sm bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 flex items-center gap-1"
+                >
+                  <Clock className="h-3.5 w-3.5 mr-1" />
+                  <span>Pending</span>
+                </Badge>
+              )}
+              {experience.status === "rejected" && (
+                <Badge variant="destructive" className="text-sm">
+                  Rejected
                 </Badge>
               )}
             </div>

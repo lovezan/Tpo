@@ -166,7 +166,7 @@ export default function ExperienceFilter() {
             <SelectContent>
               <SelectItem value="all">All Branches</SelectItem>
               {branches.map((branch) => (
-                <SelectItem key={branch} value={branch.toLowerCase().replace(/\s+/g, "-")}>
+                <SelectItem key={branch} value={branch.toLowerCase().replace(/ /g, "-")}>
                   {branch}
                 </SelectItem>
               ))}
@@ -200,7 +200,7 @@ export default function ExperienceFilter() {
                     <SelectContent>
                       <SelectItem value="all">All Companies</SelectItem>
                       {companies.map((company) => (
-                        <SelectItem key={company} value={company.toLowerCase().replace(/\s+/g, "-")}>
+                        <SelectItem key={company} value={company.toLowerCase().replace(/ /g, "-")}>
                           {company}
                         </SelectItem>
                       ))}
@@ -234,7 +234,7 @@ export default function ExperienceFilter() {
                     <SelectContent>
                       <SelectItem value="all">All Types</SelectItem>
                       {placementTypes.map((type) => (
-                        <SelectItem key={type} value={type.toLowerCase().replace(/\s+/g, "-")}>
+                        <SelectItem key={type} value={type.toLowerCase().replace(/ /g, "-")}>
                           {type}
                         </SelectItem>
                       ))}
@@ -251,7 +251,7 @@ export default function ExperienceFilter() {
                     <SelectContent>
                       <SelectItem value="all">All Types</SelectItem>
                       {companyTypes.map((type) => (
-                        <SelectItem key={type} value={type.toLowerCase().replace(/\s+/g, "-")}>
+                        <SelectItem key={type} value={type.toLowerCase().replace(/ /g, "-")}>
                           {type}
                         </SelectItem>
                       ))}

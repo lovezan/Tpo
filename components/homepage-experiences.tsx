@@ -1,42 +1,52 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { ArrowRight } from "lucide-react"
-import { getFeaturedExperiences } from "@/lib/data-utils"
+import { ArrowRight, Lock } from "lucide-react"
+import { getExperiences } from "@/lib/data-utils"
+import { toast } from "@/hooks/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { Experience } from "@/components/experience-list"
 import { useAuth } from "@/contexts/auth-context"
 
-export default function FeaturedExperiences() {
-  const { user, isAdmin } = useAuth()
-  const [experiences, setExperiences] = useState<Experience[]>([])
+export default function HomepageExperiences() {
+  const router = useRouter()
+  const { isAuthenticated } = useAuth()
+  const [experiences, setExperiences] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchExperiences = async () => {
       try {
         setIsLoading(true)
-        console.log("FeaturedExperiences: Fetching featured experiences...")
-        const featuredExperiences = await getFeaturedExperiences(3) // Get top 3 experiences
-        console.log(`FeaturedExperiences: Fetched ${featuredExperiences.length} featured experiences`)
+        // Get experiences from Firestore or mock data
+        const allExperiences = await getExperiences()
 
-        // Make sure we only show approved experiences for non-authenticated users
-        const filteredExperiences =
-          user || isAdmin ? featuredExperiences : featuredExperiences.filter((exp) => exp.status === "approved")
+        // Filter for approved experiences only and take the most recent 3
+        const approvedExperiences = allExperiences
+          .filter((exp) => exp.status === "approved")
+          .sort((a, b) => {
+            // Sort by submission date (newest first) if available
+            const dateA = a.submittedAt ? new Date(a.submittedAt).getTime() : 0
+            const dateB = b.submittedAt ? new Date(b.submittedAt).getTime() : 0
+            return dateB - dateA
+          })
+          .slice(0, 3)
 
-        console.log(`FeaturedExperiences: Filtered to ${filteredExperiences.length} experiences for display`)
-
-        setExperiences(filteredExperiences)
+        setExperiences(approvedExperiences)
       } catch (error) {
-        console.error("Error fetching featured experiences:", error)
+        console.error("Error loading experiences:", error)
+        toast({
+          title: "Error",
+          description: "Failed to load experiences. Please try again.",
+          variant: "destructive",
+        })
 
-        // Use mock data as fallback - ensure they're approved
+        // Use mock data as fallback
         const mockExperiences = [
           {
             id: 1,
@@ -50,12 +60,7 @@ export default function FeaturedExperiences() {
               "The interview process consisted of 3 technical rounds and 1 HR round. The technical rounds focused on data structures, algorithms, and system design...",
             profileImage: "/placeholder.svg?height=100&width=100",
             companyLogo: "/placeholder.svg?height=40&width=40",
-            status: "approved" as const,
-            preparationStrategy: "I focused on strengthening my fundamentals in data structures and algorithms.",
-            interviewProcess: "The interview process at Microsoft consisted of 3 technical rounds and 1 HR round.",
-            tips: "Start your preparation early, at least 3-4 months before the placement season.",
-            challenges:
-              "The most challenging part was the system design round as I had limited experience in this area.",
+            status: "approved",
             role: "Software Engineer",
           },
           {
@@ -70,14 +75,7 @@ export default function FeaturedExperiences() {
               "Preparation for Amazon required strong fundamentals in data structures and algorithms. The interview process was rigorous with 4 rounds...",
             profileImage: "/placeholder.svg?height=100&width=100",
             companyLogo: "/placeholder.svg?height=40&width=40",
-            status: "approved" as const,
-            preparationStrategy:
-              "I prepared for Amazon by focusing on their leadership principles alongside technical skills.",
-            interviewProcess:
-              "Amazon's interview process had 4 rounds: an online assessment followed by 3 interview rounds.",
-            tips: "For Amazon, understand their leadership principles thoroughly.",
-            challenges:
-              "The biggest challenge was balancing technical preparation with behavioral question preparation.",
+            status: "approved",
             role: "Software Development Engineer",
           },
           {
@@ -92,15 +90,10 @@ export default function FeaturedExperiences() {
               "The selection process at Tata Motors involved technical tests on mechanical principles, followed by design challenges and interviews...",
             profileImage: "/placeholder.svg?height=100&width=100",
             companyLogo: "/placeholder.svg?height=40&width=40",
-            status: "approved" as const,
-            preparationStrategy: "I focused on core mechanical engineering concepts and design principles.",
-            interviewProcess: "The process included a written test, technical interview, and HR round.",
-            tips: "Brush up on your fundamentals and be ready to solve practical design problems.",
-            challenges: "The technical interview was challenging with complex mechanical design problems.",
+            status: "approved",
             role: "Design Engineer",
           },
         ]
-
         setExperiences(mockExperiences)
       } finally {
         setIsLoading(false)
@@ -108,11 +101,22 @@ export default function FeaturedExperiences() {
     }
 
     fetchExperiences()
-  }, [user, isAdmin])
+  }, [])
+
+  // Function to handle view details click
+  const handleViewDetails = (experienceId: number) => {
+    if (!isAuthenticated) {
+      // Redirect to login page with return URL
+      router.push(`/auth/login?redirectTo=/experiences/${experienceId}`)
+    } else {
+      // If authenticated, go directly to experience page
+      router.push(`/experiences/${experienceId}`)
+    }
+  }
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {[1, 2, 3].map((i) => (
           <Card key={i} className="flex flex-col overflow-hidden">
             <CardHeader className="p-3 sm:p-4 pb-2 sm:pb-4">
@@ -148,18 +152,32 @@ export default function FeaturedExperiences() {
 
   if (experiences.length === 0) {
     return (
-      <div className="text-center py-4 sm:py-6 md:py-8">
-        <h3 className="text-base sm:text-lg font-medium">No featured experiences yet</h3>
-        <p className="text-muted-foreground mt-2 px-4 text-sm">Be the first to share your experience</p>
-        <Button asChild className="mt-4">
-          <Link href="/submit">Share Your Experience</Link>
-        </Button>
+      <div className="text-center py-4 sm:py-6">
+        <h3 className="text-base sm:text-lg font-medium">No experiences available</h3>
+        <p className="text-muted-foreground mt-2 px-4 text-sm">Check back later for placement experiences</p>
       </div>
     )
   }
 
+  // Helper function to get company type name
+  function getCompanyTypeName(value: string): string {
+    const typeMap: Record<string, string> = {
+      tech: "Tech",
+      finance: "Finance",
+      core: "Core",
+      product: "Product",
+      service: "Service",
+      consulting: "Consulting",
+      ecommerce: "E-Commerce",
+      healthcare: "Healthcare",
+      manufacturing: "Manufacturing",
+      other: "Other",
+    }
+    return typeMap[value] || value
+  }
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+    <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       {experiences.map((experience) => (
         <Card key={experience.id} className="flex flex-col overflow-hidden">
           <CardHeader className="p-3 sm:p-4 pb-2 sm:pb-4">
@@ -170,9 +188,7 @@ export default function FeaturedExperiences() {
                   <AvatarFallback>{experience.studentName.substring(0, 2)}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <CardTitle className="text-sm sm:text-base md:text-lg line-clamp-1">
-                    {experience.studentName}
-                  </CardTitle>
+                  <CardTitle className="text-sm sm:text-lg line-clamp-1">{experience.studentName}</CardTitle>
                   <CardDescription className="text-xs sm:text-sm line-clamp-1">{experience.branch}</CardDescription>
                 </div>
               </div>
@@ -196,6 +212,14 @@ export default function FeaturedExperiences() {
               <Badge variant="outline" className="text-[10px] sm:text-xs px-1.5 py-0 h-5">
                 {experience.year}
               </Badge>
+              {experience.companyType && (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] sm:text-xs px-1.5 py-0 h-5 bg-blue-100 dark:bg-blue-900/30 nith-theme:bg-gold/20"
+                >
+                  {getCompanyTypeName(experience.companyType)}
+                </Badge>
+              )}
               {experience.role && (
                 <Badge variant="outline" className="text-[10px] sm:text-xs px-1.5 py-0 h-5 bg-primary/10">
                   {experience.role}
@@ -207,11 +231,22 @@ export default function FeaturedExperiences() {
             </p>
           </CardContent>
           <CardFooter className="p-3 sm:p-4">
-            <Button asChild variant="ghost" className="w-full h-8 sm:h-9 text-xs sm:text-sm">
-              <Link href={`/experiences/${experience.id}`} className="flex items-center justify-between">
-                <span>Read Full Experience</span>
-                <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Link>
+            <Button
+              variant="ghost"
+              className="w-full h-8 sm:h-9 text-xs sm:text-sm"
+              onClick={() => handleViewDetails(experience.id)}
+            >
+              <div className="flex items-center justify-between w-full">
+                <span>View Full Experience</span>
+                {!isAuthenticated ? (
+                  <div className="flex items-center">
+                    <Lock className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                    <span>Login Required</span>
+                  </div>
+                ) : (
+                  <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                )}
+              </div>
             </Button>
           </CardFooter>
         </Card>
