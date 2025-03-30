@@ -5,11 +5,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Briefcase, Building, MapPin, Users, Search } from "lucide-react"
+import { Briefcase, Building, MapPin, Users, Search, Lock } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
+import { useRouter } from "next/navigation"
 
 interface Company {
   id: string
@@ -21,6 +22,7 @@ interface Company {
 }
 
 export default function CompanyList() {
+   const router = useRouter()
   const [companies, setCompanies] = useState<Company[]>([])
   const [filteredCompanies, setFilteredCompanies] = useState<Company[]>([])
   const [searchTerm, setSearchTerm] = useState("")
@@ -131,6 +133,10 @@ export default function CompanyList() {
       </div>
     )
   }
+  // Handle login redirect
+  const handleLoginRedirect = () => {
+    router.push(`/auth/login?redirectTo=${encodeURIComponent(window.location.pathname)}`)
+  }
 
   return (
     <div className="space-y-6">
@@ -174,19 +180,26 @@ export default function CompanyList() {
       {filteredCompanies.length === 0 ? (
         <Card className="col-span-full">
           <CardHeader>
-            <CardTitle>No Companies Found</CardTitle>
+            <CardTitle>Login Require!</CardTitle>
             <CardDescription>
-              {searchTerm
-                ? `No companies match "${searchTerm}". Try a different search term.`
-                : "There are no companies with placement experiences yet."}
+              Do Login to Fetch Companies
             </CardDescription>
           </CardHeader>
-          <CardContent>{!searchTerm && <p>Be the first to share your placement experience!</p>}</CardContent>
+          <CardContent><div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-full">
+                <Lock className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Login to Access All Companies</h3>
+                <p className="text-sm text-muted-foreground">
+                  
+                   Full details available after login
+                </p>
+              </div>
+            </div></CardContent>
           <CardFooter>
             {!searchTerm && (
-              <Button asChild>
-                <Link href="/submit">Share Your Experience</Link>
-              </Button>
+              <Button onClick={handleLoginRedirect}>Login Now</Button>
             )}
             {searchTerm && (
               <Button variant="outline" onClick={() => setSearchTerm("")}>
