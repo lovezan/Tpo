@@ -41,47 +41,15 @@ export default function ResourcesPage() {
                 <li className="flex items-center gap-2">
                   <ExternalLink className="h-3.5 w-3.5" />
                   <a
-                    href="https://drive.google.com/drive/folders/1UGfzpMj5N0gfJLTtT_Gg9HSRzKGQ9KBi"
+                    href="https://drive.google.com/drive/folders/16WwCey8Ai8eZIox_YRGCLfs5L75tghfx"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:underline"
                   >
-                    DSA Notes Collection
+                    Company wise Questions
                   </a>
                 </li>
-                <li className="flex items-center gap-2">
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  <a
-                    href="https://drive.google.com/drive/folders/1SkCOcAS0Kqvuz-MJkkjbFr1GSue6Ms6m"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline"
-                  >
-                    System Design Fundamentals
-                  </a>
-                </li>
-                <li className="flex items-center gap-2">
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  <a
-                    href="https://drive.google.com/drive/folders/1HWy6Qgrt9YwUG1X6PoVxvVrNBk6mYtFf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline"
-                  >
-                    Programming Language Guides
-                  </a>
-                </li>
-                <li className="flex items-center gap-2">
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  <a
-                    href="https://drive.google.com/drive/folders/1Bs3eeLfIYxXLJbvvDuLHBfmVCxqyfaWL"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline"
-                  >
-                    Interview Question Banks
-                  </a>
-                </li>
+              
               </ul>
             </CardContent>
           </Card>
