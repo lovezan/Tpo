@@ -70,7 +70,7 @@ export default function Home() {
                   className="h-12 text-xs sm:text-sm nith-theme:border-[#A52A2A] nith-theme:text-[#660000] nith-theme:hover:bg-[#A52A2A]/10 nith-theme:hover:border-[#990000]"
                 >
                   <a
-                    href="https://www.overleaf.com/latex/templates/tagged/cv"
+                    href="https://nithresume.vercel.app"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
