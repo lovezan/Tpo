@@ -28,6 +28,12 @@ export default function Footer() {
           >
             Privacy
           </Link>
+          <Link
+            href="/team"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground nith-theme:text-white/80 nith-theme:hover:text-gold"
+          >
+            Team
+          </Link>
         </div>
       </div>
     </footer>

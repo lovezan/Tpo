@@ -331,18 +331,18 @@
   background-color: #990000; /* Tertiary red for hover */
 }
 
-/* Outline buttons in NITH theme */
-.nith-theme button[class*="outline"],
-.nith-theme .btn[class*="outline"] {
-  border-color: #a52a2a; /* Secondary color */
-  color: #660000; /* Primary color for text */
+/* Outline buttons */
+.nith-theme .btn-outline {
+  border: 2px solid #a52a2a; /* Secondary color */
+  color: #660000; /* Primary text color */
+  background: transparent;
 }
 
-.nith-theme button[class*="outline"]:hover,
-.nith-theme .btn[class*="outline"]:hover {
-  background-color: rgba(165, 42, 42, 0.1); /* Secondary color with opacity */
-  border-color: #990000; /* Tertiary red for hover */
+.nith-theme .btn-outline:hover {
+  background-color: rgba(165, 42, 42, 0.1); /* Light tint on hover */
+  border-color: #990000; /* Tertiary red */
 }
+
 
 /* Ghost buttons in NITH theme */
 .nith-theme button[class*="ghost"],
