@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Briefcase, Building, MapPin, Users, Search, LogIn } from "lucide-react"
+import { Briefcase, Building, MapPin, Users, Search } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore"
@@ -25,31 +25,6 @@ export default function CompanyList() {
   const [filteredCompanies, setFilteredCompanies] = useState<Company[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [loading, setLoading] = useState(true)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-
-  useEffect(() => {
-    // Check if user is authenticated using localStorage
-    const checkAuth = () => {
-      // Check if we're in the browser
-      if (typeof window !== "undefined") {
-        // Check for Firebase auth persistence
-        const user = localStorage.getItem("firebase:authUser:AIzaSyDGwmfBvV9K5lUzPfhqYpYEXPPuQZ9cv4w:[DEFAULT]")
-        // Or check for our custom auth storage
-        const admin = localStorage.getItem("currentAdmin")
-
-        setIsAuthenticated(!!user || !!admin)
-      }
-    }
-
-    checkAuth()
-
-    // Add event listener for storage changes (in case user logs in/out in another tab)
-    window.addEventListener("storage", checkAuth)
-
-    return () => {
-      window.removeEventListener("storage", checkAuth)
-    }
-  }, [])
 
   useEffect(() => {
     async function fetchCompanies() {
@@ -154,28 +129,6 @@ export default function CompanyList() {
           ))}
         </div>
       </div>
-    )
-  }
-
-  // If not logged in, show login prompt
-  if (!isAuthenticated) {
-    return (
-      <Card className="w-full">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Authentication Required</CardTitle>
-          <CardDescription>Please log in to view all companies and placement experiences</CardDescription>
-        </CardHeader>
-        <CardContent className="flex justify-center">
-          <div className="rounded-full bg-primary/10 p-6">
-            <LogIn className="h-12 w-12 text-primary" />
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-center pb-6">
-          <Button asChild size="lg">
-            <Link href="/auth/login">Log In to Continue</Link>
-          </Button>
-        </CardFooter>
-      </Card>
     )
   }
 
