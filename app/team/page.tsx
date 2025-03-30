@@ -26,8 +26,8 @@ const teamMembers: TeamMember[] = [
   {
     name: "Talib Hassan",
     role: "Full Stack Developer",
-    bio: "Talib has expertise in web frontend development and software engineering. Led the development of a live conference website and has experience with React, Vite, and deep learning. Pursuing a B.Tech in CSE from NIT Hamirpur.",
-    image: "/talib1.JPG",
+    bio: "Talib is a MERN stack developer and a software engineer who has designed and built multiple web applications, demonstrating his expertise in both frontend and backend development.",
+    image: "/Haseena.jpeg",
     social: {
       linkedin: "https://www.linkedin.com/in/talib-hassan-32b56222b/",
       // twitter: "https://twitter.com",
@@ -37,8 +37,8 @@ const teamMembers: TeamMember[] = [
   {
     name: "Ayush Shah",
     role: "Frontend Developer",
-    bio: "Kundan is an experienced designer who has crafted intuitive and visually engaging interfaces for a variety of digital products. He focuses on creating seamless, accessible, and user-friendly designs that enhance user experiences",
-    image: "/Kundan.png",
+    bio: "Ayush is a collaborative frontend developer with a strong understanding of the full stack, translating design concepts into elegant and intuitive web interfaces. He prioritizes user-centric development, ensuring accessibility and a smooth user journey, using technologies like ReactJS, NextJS, JavaScript, and Node.js.",
+    image: "/Ayush.jpeg",
     social: {
       linkedin: "https://www.linkedin.com/in/ayush-shah-106144229/",
       // twitter: "https://twitter.com",
@@ -49,7 +49,7 @@ const teamMembers: TeamMember[] = [
     name: "Hubed Singh Kaushal",
     role: "Frontend Developer",
     bio: "Hubed is a skilled frontend developer specializing in React.js and Next.js, crafting sleek, responsive web apps. A co-founder passionate about clean code and seamless user experiences.",
-    image: "/hubed.jpg",
+    image: "/Hubed.jpeg",
     social: {
       linkedin: "http://linkedin.com/in/hubedsinghk",
       // twitter: "https://twitter.com",
@@ -59,11 +59,21 @@ const teamMembers: TeamMember[] = [
   {
     name: "Sumit Kumar Gautam",
     role: "Backend Developer",
-    bio: "Sumit is a skilled backend developer with expertise in building robust and scalable systems using Node.js, Express, and Python. Passionate about optimizing performance and creating efficient server-side solutions, he ensures seamless functionality for web applications.",
-    image: "/sumit1.jpg",
+    bio: "Sumit is a skilled backend developer with expertise in building robust and scalable systems. He leverages Node.js, Express, Python, Mongoose, and Google Auth to create efficient server-side solutions, ensuring seamless functionality for web applications. Additionally he also has knowledge of Reactjs and Nextjs.",
+    image: "/Sumit.jpeg",
     social: {
       linkedin: "https://www.linkedin.com/in/sumit-kumar-270094228",
       github: "https://github.com/SumitKumar2002",
+    },
+  },
+  {
+    name: "Kundan Khirade",
+    role: "UI/UX Designer",
+    bio: "Kundan is an experienced designer who has crafted intuitive and visually engaging interfaces for a variety of digital products. He focuses on creating seamless, accessible, and user-friendly designs that enhance user experiences.",
+    image: "/Kundan.jpeg",
+    social: {
+      linkedin: "https://www.linkedin.com/in/kundankhirade/",
+    //   github: "https://github.com/SumitKumar2002",
     },
   },
  
@@ -86,8 +96,7 @@ export default function TeamPage() {
               Meet the People Behind <span className="text-primary">NITH Career Compas</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              We're a diverse team of engineers, designers, and AI specialists passionate about revolutionizing document
-              creation.
+            We're a dedicated team of engineers, designers, and developers, building connections between NITH students and alumni for shared placement insights and career guidance.
             </p>
           </div>
         </div>
