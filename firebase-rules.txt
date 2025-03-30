@@ -36,6 +36,18 @@ service cloud.firestore {
       allow read, write: if request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
+    
+    // Stats document for admin counts
+    match /stats/{docId} {
+      // Anyone can read stats
+      allow read: if true;
+      
+      // Only admins or during admin creation can write to stats
+      allow write: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        docId == 'admin' && !exists(/databases/$(database)/documents/stats/admin)
+      );
+    }
   }
 }
 

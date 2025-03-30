@@ -7,7 +7,6 @@ import {
   signOut,
   onAuthStateChanged,
   sendEmailVerification,
-  sendPasswordResetEmail,
 } from "firebase/auth"
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore"
 import { auth, db } from "@/lib/firebase"
@@ -318,7 +317,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const resetPassword = async (email: string) => {
+  const sendPasswordResetEmail = async (email: string) => {
     try {
       setLoading(true)
       await sendPasswordResetEmail(auth, email)
@@ -358,7 +357,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         login,
         logout,
-        resetPassword,
+        resetPassword: sendPasswordResetEmail,
         isAdmin,
         isAuthenticated,
       }}
