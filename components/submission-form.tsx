@@ -581,6 +581,7 @@ export default function SubmissionForm() {
                           <SelectContent>
                             <SelectItem value="computer-science">Computer Science</SelectItem>
                             <SelectItem value="electronics">Electronics & Communication</SelectItem>
+                            <SelectItem value="mathematics">Mathematics and Computing</SelectItem>
                             <SelectItem value="electrical">Electrical Engineering</SelectItem>
                             <SelectItem value="mechanical">Mechanical Engineering</SelectItem>
                             <SelectItem value="civil">Civil Engineering</SelectItem>
