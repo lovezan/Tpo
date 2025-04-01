@@ -153,7 +153,7 @@ export default function Header() {
           ) : (
             <div className="hidden md:block">
               <Button asChild variant="default" size="sm">
-                <Link href="/auth/login">Login</Link>
+                <Link href="/auth/login">Admin Login</Link>
               </Button>
             </div>
           )}
@@ -247,7 +247,7 @@ export default function Header() {
             ) : (
               <div className="pt-2 border-t">
                 <Button asChild onClick={() => setIsMenuOpen(false)}>
-                  <Link href="/auth/login">Login</Link>
+                  <Link href="/auth/login">Admin Login</Link>
                 </Button>
               </div>
             )}
