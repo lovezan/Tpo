@@ -7,15 +7,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Lock } from "lucide-react"
-import { getExperiences } from "@/lib/data-utils"
+import { ArrowRight } from "lucide-react"
+import { getMockExperiences } from "@/lib/data-utils"
 import { toast } from "@/hooks/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useAuth } from "@/contexts/auth-context"
+import { getCompanyLogo, getRandomProfileImage, getCompanyColor } from "@/lib/image-utils"
 
 export default function HomepageExperiences() {
   const router = useRouter()
-  const { isAuthenticated } = useAuth()
   const [experiences, setExperiences] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -23,21 +22,17 @@ export default function HomepageExperiences() {
     const fetchExperiences = async () => {
       try {
         setIsLoading(true)
-        // Get experiences from Firestore or mock data
-        const allExperiences = await getExperiences()
+        const approvedExperiences = await getMockExperiences()
 
-        // Filter for approved experiences only and take the most recent 3
-        const approvedExperiences = allExperiences
-          .filter((exp) => exp.status === "approved")
+        const recentExperiences = approvedExperiences
           .sort((a, b) => {
-            // Sort by submission date (newest first) if available
             const dateA = a.submittedAt ? new Date(a.submittedAt).getTime() : 0
             const dateB = b.submittedAt ? new Date(b.submittedAt).getTime() : 0
             return dateB - dateA
           })
           .slice(0, 3)
 
-        setExperiences(approvedExperiences)
+        setExperiences(recentExperiences)
       } catch (error) {
         console.error("Error loading experiences:", error)
         toast({
@@ -45,56 +40,7 @@ export default function HomepageExperiences() {
           description: "Failed to load experiences. Please try again.",
           variant: "destructive",
         })
-
-        // Use mock data as fallback
-        const mockExperiences = [
-          {
-            id: 1,
-            studentName: "Rahul Sharma",
-            branch: "Computer Science",
-            company: "Microsoft",
-            companyType: "tech",
-            year: 2023,
-            type: "On-Campus",
-            excerpt:
-              "The interview process consisted of 3 technical rounds and 1 HR round. The technical rounds focused on data structures, algorithms, and system design...",
-            profileImage: "/placeholder.svg?height=100&width=100",
-            companyLogo: "/placeholder.svg?height=40&width=40",
-            status: "approved",
-            role: "Software Engineer",
-          },
-          {
-            id: 2,
-            studentName: "Priya Patel",
-            branch: "Electronics & Communication",
-            company: "Amazon",
-            companyType: "tech",
-            year: 2023,
-            type: "On-Campus",
-            excerpt:
-              "Preparation for Amazon required strong fundamentals in data structures and algorithms. The interview process was rigorous with 4 rounds...",
-            profileImage: "/placeholder.svg?height=100&width=100",
-            companyLogo: "/placeholder.svg?height=40&width=40",
-            status: "approved",
-            role: "Software Development Engineer",
-          },
-          {
-            id: 3,
-            studentName: "Amit Kumar",
-            branch: "Mechanical Engineering",
-            company: "Tata Motors",
-            companyType: "core",
-            year: 2023,
-            type: "On-Campus",
-            excerpt:
-              "The selection process at Tata Motors involved technical tests on mechanical principles, followed by design challenges and interviews...",
-            profileImage: "/placeholder.svg?height=100&width=100",
-            companyLogo: "/placeholder.svg?height=40&width=40",
-            status: "approved",
-            role: "Design Engineer",
-          },
-        ]
-        setExperiences(mockExperiences)
+        setExperiences([])
       } finally {
         setIsLoading(false)
       }
@@ -102,17 +48,6 @@ export default function HomepageExperiences() {
 
     fetchExperiences()
   }, [])
-
-  // Function to handle view details click
-  const handleViewDetails = (experienceId: number) => {
-    if (!isAuthenticated) {
-      // Redirect to login page with return URL
-      router.push(`/auth/login?redirectTo=/experiences/${experienceId}`)
-    } else {
-      // If authenticated, go directly to experience page
-      router.push(`/experiences/${experienceId}`)
-    }
-  }
 
   if (isLoading) {
     return (
@@ -159,7 +94,6 @@ export default function HomepageExperiences() {
     )
   }
 
-  // Helper function to get company type name
   function getCompanyTypeName(value: string): string {
     const typeMap: Record<string, string> = {
       tech: "Tech",
@@ -175,7 +109,9 @@ export default function HomepageExperiences() {
     }
     return typeMap[value] || value
   }
-
+// Ensure we have a profile picture and company logo
+const profilePicture = getRandomProfileImage()
+const CompanyLogo = getCompanyLogo()
   return (
     <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       {experiences.map((experience) => (
@@ -183,17 +119,22 @@ export default function HomepageExperiences() {
           <CardHeader className="p-3 sm:p-4 pb-2 sm:pb-4">
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-2">
-                <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                  <AvatarImage src={experience.profileImage} alt={experience.studentName} />
-                  <AvatarFallback>{experience.studentName.substring(0, 2)}</AvatarFallback>
-                </Avatar>
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+              <Image
+                src={profilePicture || "/placeholder.svg"}
+                alt={experience.name}
+                width={64}
+                height={64}
+                className="object-cover"
+              />
+            </div>
                 <div>
                   <CardTitle className="text-sm sm:text-lg line-clamp-1">{experience.studentName}</CardTitle>
                   <CardDescription className="text-xs sm:text-sm line-clamp-1">{experience.branch}</CardDescription>
                 </div>
               </div>
               <Image
-                src={experience.companyLogo || "/placeholder.svg"}
+                src={CompanyLogo || "/placeholder.svg"}
                 alt={`${experience.company} logo`}
                 width={32}
                 height={32}
@@ -234,18 +175,11 @@ export default function HomepageExperiences() {
             <Button
               variant="ghost"
               className="w-full h-8 sm:h-9 text-xs sm:text-sm"
-              onClick={() => handleViewDetails(experience.id)}
+              onClick={() => router.push(`/experiences/${experience.id}`)}
             >
               <div className="flex items-center justify-between w-full">
                 <span>View Full Experience</span>
-                {!isAuthenticated ? (
-                  <div className="flex items-center">
-                    <Lock className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                    <span>Login Required</span>
-                  </div>
-                ) : (
-                  <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
-                )}
+                <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
               </div>
             </Button>
           </CardFooter>
@@ -254,4 +188,3 @@ export default function HomepageExperiences() {
     </div>
   )
 }
-

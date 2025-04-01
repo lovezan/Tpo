@@ -20,9 +20,23 @@ export default function StatsSection() {
       try {
         setIsLoading(true)
         const statsData = await getPlacementStats()
-        setStats(statsData)
+
+        // Map the returned stats to the format expected by the component
+        setStats({
+          totalExperiences: statsData.totalPlacements,
+          totalCompanies: Object.keys(statsData.companyCount).length,
+          jobProfiles: Object.keys(statsData.companyTypeCount).length,
+          highestPackage: `₹${statsData.maxPackage.toFixed(1)} LPA`,
+        })
       } catch (error) {
         console.error("Error fetching stats:", error)
+        // Set default values in case of error
+        setStats({
+          totalExperiences: 0,
+          totalCompanies: 0,
+          jobProfiles: 0,
+          highestPackage: "₹0 LPA",
+        })
       } finally {
         setIsLoading(false)
       }
@@ -85,7 +99,22 @@ export default function StatsSection() {
             )}
           </CardContent>
         </Card>
-     
+        <Card className="overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-4 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Highest Package</CardTitle>
+            <Award className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="p-2 sm:p-4 pt-0 sm:pt-0">
+            {isLoading ? (
+              <Skeleton className="h-6 sm:h-8 w-16 sm:w-20" />
+            ) : (
+              <>
+                <div className="text-lg sm:text-xl md:text-2xl font-bold truncate">{stats.highestPackage}</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Top offer</p>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </section>
   )
