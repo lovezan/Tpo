@@ -28,6 +28,7 @@ import { getExperiences } from "@/lib/data-utils"
 import { toast } from "@/hooks/use-toast"
 import type { Experience } from "@/components/experience-list"
 import { useAuth } from "@/contexts/auth-context"
+import { getCompanyLogo, getRandomProfileImage } from "@/lib/image-utils"
 
 // Function to get the company type name
 const getCompanyTypeName = (companyType: string) => {
@@ -182,7 +183,8 @@ export default function ExperiencePage() {
       </div>
     )
   }
-
+const profilePicture = getRandomProfileImage()
+const CompanyLogo = getCompanyLogo()
   return (
     <div className="container px-4 md:px-6 py-8 md:py-12">
       <Button asChild variant="ghost" className="mb-6">
@@ -254,7 +256,7 @@ export default function ExperiencePage() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
-                <AvatarImage src={experience.profileImage} alt={experience.studentName} />
+                <AvatarImage src={profilePicture} alt={experience.studentName} />
                 <AvatarFallback>{experience.studentName.substring(0, 2)}</AvatarFallback>
               </Avatar>
               <div>
@@ -363,7 +365,7 @@ export default function ExperiencePage() {
           <Card className="p-6">
             <div className="flex flex-col items-center gap-4 text-center">
               <Image
-                src={experience.companyLogo || "/placeholder.svg"}
+                src={CompanyLogo || "/placeholder.svg"}
                 alt={`${experience.company} logo`}
                 width={80}
                 height={80}
@@ -475,7 +477,7 @@ export default function ExperiencePage() {
                   <div key={relatedExp.id}>
                     <div className="flex items-start gap-3">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={relatedExp.profileImage} alt={relatedExp.studentName} />
+                        <AvatarImage src={profileImage} alt={relatedExp.studentName} />
                         <AvatarFallback>{relatedExp.studentName.substring(0, 2)}</AvatarFallback>
                       </Avatar>
                       <div className="space-y-1">

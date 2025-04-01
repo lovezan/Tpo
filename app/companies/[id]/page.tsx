@@ -11,6 +11,7 @@ import Image from "next/image"
 import { collection, query, where, getDocs } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { ExperienceCard } from "@/components/experience-card"
+import { getCompanyLogo } from "@/lib/image-utils"
 
 interface Experience {
   id: number
@@ -117,14 +118,14 @@ export default function CompanyPage() {
       </div>
     )
   }
-
+const CompanyLogo = getCompanyLogo()
   return (
     <div className="container py-8">
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center mb-8">
         <div className="w-16 h-16 rounded-lg overflow-hidden flex items-center justify-center bg-secondary">
           {company.logo ? (
             <Image
-              src={company.logo || "/placeholder.svg"}
+              src={CompanyLogo || "/placeholder.svg"}
               alt={company.name}
               width={64}
               height={64}
