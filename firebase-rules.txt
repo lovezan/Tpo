@@ -5,7 +5,7 @@ service cloud.firestore {
     match /experiences/{experienceId} {
       // Allow anyone to read approved experiences
       // Allow authenticated users to read all experiences
-      allow read: if resource.data.status == 'approved' || request.auth != null;
+      allow read: if true;
       
       // Allow anyone to submit an experience
       allow create: if true;
