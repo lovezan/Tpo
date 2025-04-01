@@ -108,7 +108,7 @@ export default function FeaturedExperiences() {
     }
 
     fetchExperiences()
-  }, [user, isAdmin])
+  }, [])
 
   if (isLoading) {
     return (
