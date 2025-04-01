@@ -90,7 +90,7 @@ export default function ExperiencePage() {
             setExperience(foundExperience)
           } else {
             setExperience(foundExperience)
-            setRequiresAuth(false)
+            setRequiresAuth(true)
 
             // Find related experiences from same company/student that are approved
             const related = experiences
