@@ -1,91 +1,103 @@
-// Default profile images
+// Default profile images - these should be in the public folder
 const DEFAULT_PROFILE_IMAGES = [
-    "/images/profiles/profile-1.png",
-    "/images/profiles/profile-2.png",
-    "/images/profiles/profile-3.png",
-    "/images/profiles/profile-4.png",
-    "/images/profiles/profile-5.png",
-  ]
+    "/profiles/default-1.JPG",
+    "/profiles/default-2.JPG",
+    "/profiles/default-3.JPG",
+    "/profiles/default-4.JPG",
+    "/profiles/default-5.JPG",
+  ];
   
-  // Default company logos - mapping common company names to their logos
-  const COMPANY_LOGOS: Record<string, string> = {
-    Google: "/images/companies/google.png",
-    Microsoft: "/images/companies/microsoft.png",
-    Amazon: "/images/companies/amazon.png",
-    Apple: "/images/companies/apple.png",
-    Facebook: "/images/companies/facebook.png",
-    Meta: "/images/companies/meta.png",
-    Netflix: "/images/companies/netflix.png",
-    Adobe: "/images/companies/adobe.png",
-    IBM: "/images/companies/ibm.png",
-    Intel: "/images/companies/intel.png",
-    Oracle: "/images/companies/oracle.png",
-    Samsung: "/images/companies/samsung.png",
-    Twitter: "/images/companies/twitter.png",
-    Uber: "/images/companies/uber.png",
-    LinkedIn: "/images/companies/linkedin.png",
-    Airbnb: "/images/companies/airbnb.png",
-    Spotify: "/images/companies/spotify.png",
-    Tesla: "/images/companies/tesla.png",
-    Nvidia: "/images/companies/nvidia.png",
-    PayPal: "/images/companies/paypal.png",
-    TCS: "/images/companies/tcs.png",
-    Infosys: "/images/companies/infosys.png",
-    Wipro: "/images/companies/wipro.png",
-    HCL: "/images/companies/hcl.png",
-    "Tech Mahindra": "/images/companies/tech-mahindra.png",
-    Cognizant: "/images/companies/cognizant.png",
-    Accenture: "/images/companies/accenture.png",
-    Capgemini: "/images/companies/capgemini.png",
-    Deloitte: "/images/companies/deloitte.png",
-  }
-  
-  // Get a random profile image from the default set
+  // Get a random profile image from the defaults
   export function getRandomProfileImage(): string {
-    const randomIndex = Math.floor(Math.random() * DEFAULT_PROFILE_IMAGES.length)
-    return DEFAULT_PROFILE_IMAGES[randomIndex]
+    const randomIndex = Math.floor(Math.random() * DEFAULT_PROFILE_IMAGES.length);
+    return DEFAULT_PROFILE_IMAGES[randomIndex];
   }
   
-  // Get a company logo based on company name
+  // Company logo mapping - these should be in the public folder
+  const COMPANY_LOGOS: Record<string, string> = {
+    microsoft: "/companies/microsoft.png",
+    google: "/companies/google.PNG",
+    amazon: "/companies/amazon.png",
+    apple: "/companies/apple.png",
+    meta: "/companies/meta.png",
+    facebook: "/companies/meta.png", // Alias for Meta
+    netflix: "/companies/netflix.png",
+    tesla: "/companies/tesla.png",
+    bel: "/companies/BEL.PNG",
+    ibm: "/companies/ibm.png",
+    onix: "/companies/onix.JPG",
+    intel: "/companies/intel.png",
+    adobe: "/companies/adobe.JPG",
+    "cimpress technology": "/companies/cimpress.png",
+    BNY: "/companies/BNY.png",
+    "hcl": "/companies/hcl.png",
+    
+    claudera: "/companies/cloudera.png",
+    Nvidia: "/companies/nvidia.png",
+    oracle: "/companies/oracle.JPG",
+    salesforce: "/companies/salesforce.png",
+    twitter: "/companies/twitter.png",
+    uber: "/companies/uber.png",
+    airbnb: "/companies/airbnb.png",
+    spotify: "/companies/spotify.png",
+    samsung: "/companies/samsung.png",
+    tcs: "/companies/tcs.png",
+    infosys: "/companies/infosys.png",
+    wipro: "/companies/wipro.png",
+    cognizant: "/companies/cognizant.png",
+    accenture: "/companies/accenture.png",
+    capgemini: "/companies/capgemini.png",
+    deloitte: "/companies/deloitte.png",
+    pwc: "/companies/pwc.png",
+    kpmg: "/companies/kpmg.png",
+    juspay: "/companies/juspay.JPG",
+    ey: "/companies/ey.png",
+    zscaler: "/companies/zscaler.PNG",
+    
+    "goldman sachs": "/companies/goldman-sachs.png",
+    jpmorgan: "/companies/jpmorgan.png",
+    "morgan stanley": "/companies/morgan-stanley.png",
+  };
+  
+  // Get company logo or default
   export function getCompanyLogo(companyName: string): string {
-    if (!companyName) return "/images/companies/default.png"
-  
-    // Normalize company name
-    const normalizedName = companyName.toLowerCase().trim()
-  
-    // Check for exact match (case insensitive)
+    if (!companyName) return "/companies/company.png";
+    
+    // Normalize company name for lookup
+    const normalizedName = companyName.toLowerCase().trim();
+    
+    // Check for exact match
+    if (COMPANY_LOGOS[normalizedName]) {
+      return COMPANY_LOGOS[normalizedName];
+    }
+    
+    // Check for partial matches
     for (const [key, logo] of Object.entries(COMPANY_LOGOS)) {
-      if (key.toLowerCase() === normalizedName) {
-        return logo
+      if (normalizedName.includes(key) || key.includes(normalizedName)) {
+        return logo;
       }
     }
-  
-    // Check for partial match
-    for (const [key, logo] of Object.entries(COMPANY_LOGOS)) {
-      if (normalizedName.includes(key.toLowerCase()) || key.toLowerCase().includes(normalizedName)) {
-        return logo
-      }
-    }
-  
-    // For unknown companies, return a default logo with the first letter
-    return `/images/companies/default.png`
+    
+    // Generate a default logo with the first letter of the company
+    const firstLetter = normalizedName.charAt(0).toLowerCase();
+    return "/companies/company.png";
   }
   
-  // Generate a consistent color based on company name
+  // Generate a consistent color for a company based on its name
   export function getCompanyColor(companyName: string): string {
-    if (!companyName) return "#f3f4f6" // Default light gray
-  
+    if (!companyName) return "#f4f4f5"; // Default gray
+    
     // Simple hash function to generate a consistent number from a string
-    const hash = Array.from(companyName).reduce((acc, char) => acc + char.charCodeAt(0), 0)
-  
-    // Generate a pastel color using HSL
-    // Use the hash to determine the hue (0-360)
-    const hue = hash % 360
-    // Fixed saturation and lightness for pastel colors
-    const saturation = 70
-    const lightness = 85
-  
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`
+    let hash = 0;
+    for (let i = 0; i < companyName.length; i++) {
+      hash = companyName.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    // Convert to a hex color with good saturation and lightness
+    const h = Math.abs(hash) % 360; // Hue: 0-359
+    const s = 65 + (Math.abs(hash) % 20); // Saturation: 65-85%
+    const l = 75 + (Math.abs(hash) % 10); // Lightness: 75-85%
+    
+    return `hsl(${h}, ${s}%, ${l}%)`;
   }
-  
   

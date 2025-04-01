@@ -12,8 +12,8 @@ interface ExperienceCardProps {
 
 export function ExperienceCard({ experience, showLink = true }: ExperienceCardProps) {
   // Ensure we have a profile picture and company logo
-  const profilePicture = experience.profilePicture || getRandomProfileImage()
-  const companyLogo = experience.companyLogo || getCompanyLogo(experience.company)
+  const profilePicture =  getRandomProfileImage()
+  const companyLogo = getCompanyLogo(experience.company)
   const companyColor = getCompanyColor(experience.company)
 
   return (
@@ -42,7 +42,7 @@ export function ExperienceCard({ experience, showLink = true }: ExperienceCardPr
             style={{ backgroundColor: companyLogo.includes("default") ? companyColor : "transparent" }}
           >
             <Image
-              src={companyLogo || "/placeholder.svg"}
+              src={company.logo || "/companies/company.png"}
               alt={experience.company}
               width={32}
               height={32}

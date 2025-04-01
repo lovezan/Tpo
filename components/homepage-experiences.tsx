@@ -119,15 +119,10 @@ const CompanyLogo = getCompanyLogo()
           <CardHeader className="p-3 sm:p-4 pb-2 sm:pb-4">
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-2">
-              <div className="w-16 h-16 rounded-full overflow-hidden bg-muted flex items-center justify-center">
-              <Image
-                src={profilePicture || "/placeholder.svg"}
-                alt={experience.name}
-                width={64}
-                height={64}
-                className="object-cover"
-              />
-            </div>
+              <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
+                                    <AvatarImage src={profilePicture} alt={experience.studentName} />
+                                    <AvatarFallback>{experience.studentName.substring(0, 2)}</AvatarFallback>
+                                  </Avatar>
                 <div>
                   <CardTitle className="text-sm sm:text-lg line-clamp-1">{experience.studentName}</CardTitle>
                   <CardDescription className="text-xs sm:text-sm line-clamp-1">{experience.branch}</CardDescription>

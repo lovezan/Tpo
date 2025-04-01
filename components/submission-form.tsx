@@ -7,14 +7,13 @@ import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "@/hooks/use-toast"
-import { AlertCircle, CheckCircle2, Upload, Search, User, Building, FileText, Link } from "lucide-react"
+import { AlertCircle, CheckCircle2, Search, User, Building, FileText, Link } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { saveExperienceToFirestore } from "@/lib/firebase"
 import { getCompaniesFromFirestore } from "@/lib/firebase"
@@ -137,8 +136,8 @@ const formSchema = z.object({
   resources: z
     .array(
       z.object({
-        title: z.string().min(1, { message: "Resource title is required" }),
-        url: z.string().url({ message: "Please enter a valid URL" }),
+        title: z.string().optional(), // Changed from min(1) to optional
+        url: z.string().optional(), // Changed from url() to optional
       }),
     )
     .optional(),
@@ -276,6 +275,9 @@ export default function SubmissionForm() {
         }
       }
 
+      // Filter out empty resources
+      const filteredResources = values.resources?.filter((r) => r.title || r.url) || []
+
       // Create a new experience object
       const newExperience = {
         id: Date.now(),
@@ -297,7 +299,7 @@ export default function SubmissionForm() {
         interviewProcess: values.interviewProcess,
         tips: values.tips,
         challenges: values.challenges,
-        resources: values.resources || [],
+        resources: filteredResources,
         linkedIn: values.linkedIn || "",
         github: values.github || "",
         personalEmail: values.personalEmail || "",
@@ -615,18 +617,6 @@ export default function SubmissionForm() {
                   />
                 </div>
 
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="profilePicture">Profile Picture (Optional)</Label>
-                    <div className="flex items-center gap-4">
-                      <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-                        <Upload className="h-6 w-6 text-muted-foreground" />
-                      </div>
-                      <Input id="profilePicture" type="file" accept="image/*" ref={profilePictureRef} />
-                    </div>
-                  </div>
-                </div>
-
                 <div className="flex justify-end">
                   <Button type="button" onClick={goToNextTab} className="w-full sm:w-auto">
                     Next: Placement Details
@@ -760,11 +750,6 @@ export default function SubmissionForm() {
                   )}
                 />
 
-                <div className="space-y-2">
-                  <Label htmlFor="companyLogo">Company Logo (Optional)</Label>
-                  <Input id="companyLogo" type="file" accept="image/*" ref={companyLogoRef} />
-                </div>
-
                 <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
                   <Button type="button" variant="outline" onClick={goToPreviousTab} className="w-full sm:w-auto">
                     Back: Personal Info
@@ -854,76 +839,78 @@ export default function SubmissionForm() {
                   )}
                 />
 
-                {/* Add this after the challenges FormField in the experience TabsContent */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium">Resources (Optional)</h3>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={addResource}
-                      className="flex items-center gap-1"
-                    >
-                      <PlusCircle className="h-4 w-4" />
-                      <span>Add Resource</span>
-                    </Button>
-                  </div>
+               {/* Add this after the challenges FormField in the experience TabsContent */}
+<div className="space-y-4">
+  <div className="flex items-center justify-between">
+    <h3 className="text-lg font-medium">Resources (Optional)</h3>
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={addResource}
+      className="flex items-center gap-1"
+    >
+      <PlusCircle className="h-4 w-4" />
+      <span>Add Resource</span>
+    </Button>
+  </div>
 
-                  <div className="space-y-4">
-                    {form.watch("resources")?.map((_, index) => (
-                      <div key={index} className="flex flex-col sm:flex-row gap-3 items-start">
-                        <div className="flex-1 space-y-2">
-                          <FormField
-                            control={form.control}
-                            name={`resources.${index}.title`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className={index !== 0 ? "sr-only" : ""}>Resource Title</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="e.g., DSA Course, Interview Prep Guide" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+  {form.watch("resources")?.length > 0 && (
+    <div className="space-y-4">
+      {form.watch("resources").map((_, index) => (
+        <div key={index} className="flex flex-col sm:flex-row gap-3 items-start">
+          <div className="flex-1 space-y-2">
+            <FormField
+              control={form.control}
+              name={`resources.${index}.title`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="sr-only">Resource Title (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., DSA Course, Interview Prep Guide" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-                        <div className="flex-1 space-y-2">
-                          <FormField
-                            control={form.control}
-                            name={`resources.${index}.url`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className={index !== 0 ? "sr-only" : ""}>Resource URL</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="https://example.com/resource" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+          <div className="flex-1 space-y-2">
+            <FormField
+              control={form.control}
+              name={`resources.${index}.url`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="sr-only">Resource URL (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://example.com/resource" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeResource(index)}
-                          className="mt-8 shrink-0"
-                          disabled={form.watch("resources")?.length === 1}
-                        >
-                          <Trash2 className="h-4 w-4 text-muted-foreground" />
-                          <span className="sr-only">Remove resource</span>
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => removeResource(index)}
+            className="mt-8 shrink-0"
+          >
+            <Trash2 className="h-4 w-4 text-muted-foreground" />
+            <span className="sr-only">Remove resource</span>
+          </Button>
+        </div>
+      ))}
+    </div>
+  )}
 
-                  <div className="text-sm text-muted-foreground">
-                    Add links to helpful resources you used during your preparation (courses, books, websites, etc.)
-                  </div>
-                </div>
+  <div className="text-sm text-muted-foreground">
+    Add links to helpful resources you used during your preparation (courses, books, websites, etc.)
+  </div>
+</div>
+
 
                 <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
                   <Button type="button" variant="outline" onClick={goToPreviousTab} className="w-full sm:w-auto">
