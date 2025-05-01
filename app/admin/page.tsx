@@ -54,6 +54,9 @@ interface Experience {
   linkedIn?: string
   github?: string
   personalEmail?: string
+  email?: string
+  phoneNumber?: string
+  rollNumber?: string
   preparationStrategy?: string
   interviewProcess?: string
   tips?: string
@@ -697,6 +700,50 @@ export default function AdminPage() {
                 <div>
                   <h4 className="font-medium mb-2">Challenges Faced</h4>
                   <p className="text-muted-foreground">{selectedExperience.challenges || "Not provided"}</p>
+                </div>
+              </div>
+
+              <Separator />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium mb-2">Contact Information (Admin Only)</h4>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-medium">Email:</span> {selectedExperience.email || "Not provided"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-medium">Phone:</span> {selectedExperience.phoneNumber || "Not provided"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-medium">Roll Number:</span>{" "}
+                      {selectedExperience.rollNumber || "Not provided"}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-2">Social Profiles</h4>
+                  <div className="space-y-1">
+                    {selectedExperience.linkedIn && (
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-medium">LinkedIn:</span> {selectedExperience.linkedIn}
+                      </p>
+                    )}
+                    {selectedExperience.github && (
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-medium">GitHub:</span> {selectedExperience.github}
+                      </p>
+                    )}
+                    {selectedExperience.personalEmail && (
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-medium">Personal Email:</span> {selectedExperience.personalEmail}
+                      </p>
+                    )}
+                    {!selectedExperience.linkedIn &&
+                      !selectedExperience.github &&
+                      !selectedExperience.personalEmail && (
+                        <p className="text-sm text-muted-foreground">No social profiles provided</p>
+                      )}
+                  </div>
                 </div>
               </div>
 
