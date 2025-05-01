@@ -482,9 +482,14 @@ export async function saveExperienceToFirestore(experience: Experience) {
       throw new Error("Permission denied: Please check your Firebase security rules.")
     }
 
-    throw error
+    // Check if it's a network error
+    if (error.code === "unavailable" || error.code === "network-request-failed") {
+      throw new Error("Network error: Please check your internet connection and try again.")
+    }
+
+    // For other errors, provide a generic message
+    throw new Error("Failed to save experience: " + (error.message || "Unknown error"))
   }
 }
 
 export { auth, db }
-

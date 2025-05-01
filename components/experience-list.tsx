@@ -24,12 +24,15 @@ export type Experience = {
   year: number
   type: string
   excerpt: string
-  profileImage: string
-  companyLogo: string
+  profileImage?: string
+  companyLogo?: string
   status: "pending" | "approved" | "rejected"
   linkedIn?: string
   github?: string
   personalEmail?: string
+  email?: string
+  phoneNumber?: string
+  rollNumber?: string
   preparationStrategy?: string
   interviewProcess?: string
   tips?: string
@@ -38,8 +41,8 @@ export type Experience = {
   role?: string
   submittedAt?: string
   package?: string
-  uid?: string
 }
+
 
 export default function ExperienceList() {
   const searchParams = useSearchParams()

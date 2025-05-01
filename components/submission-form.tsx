@@ -121,6 +121,14 @@ const formSchema = z.object({
     .string()
     .email({ message: "Please enter a valid NIT Hamirpur email." })
     .endsWith("@nith.ac.in", { message: "Please use your NIT Hamirpur email." }),
+    phoneNumber: z
+    .string()
+    .min(10, { message: "Phone number must be at least 10 digits." })
+    .max(15, { message: "Phone number must not exceed 15 digits." }),
+  rollNumber: z
+    .string()
+    .min(5, { message: "Roll number must be at least 5 characters." })
+    .max(15, { message: "Roll number must not exceed 15 characters." }),
   branch: z.string({ required_error: "Please select your branch." }),
   graduationYear: z.string({ required_error: "Please select your graduation year." }),
   company: z.string().min(2, { message: "Company name must be at least 2 characters." }),
@@ -193,6 +201,8 @@ export default function SubmissionForm() {
     defaultValues: {
       name: "",
       email: "",
+      phoneNumber: "",
+      rollNumber: "",
       branch: "",
       graduationYear: "",
       company: "",
@@ -209,6 +219,8 @@ export default function SubmissionForm() {
       linkedIn: "",
       github: "",
       personalEmail: "",
+      profilePictureUrl: "",
+      companyLogoUrl: "",
       termsAccepted: false,
     },
   })
@@ -227,7 +239,7 @@ export default function SubmissionForm() {
     }
   }
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (isSubmitting) return // Prevent multiple submissions
 
     setIsSubmitting(true)
@@ -237,46 +249,9 @@ export default function SubmissionForm() {
       // Create an excerpt from the preparation strategy
       const excerpt = values.preparationStrategy.substring(0, 200) + "..."
 
-      // Handle file uploads
-      let profileImageUrl = "/placeholder.svg?height=100&width=100"
-      let companyLogoUrl = "/placeholder.svg?height=40&width=40"
-
-      // Upload profile picture if provided
-      if (profilePictureRef.current?.files?.length) {
-        const file = profilePictureRef.current.files[0]
-        try {
-          const uploadPath = `profile-pictures/${Date.now()}_${file.name}`
-          profileImageUrl = await uploadImageToStorage(file, uploadPath)
-          console.log("Profile picture uploaded:", profileImageUrl)
-        } catch (error) {
-          console.error("Error uploading profile picture:", error)
-          toast({
-            title: "Upload Error",
-            description: "Failed to upload profile picture. Using placeholder instead.",
-            variant: "destructive",
-          })
-        }
-      }
-
-      // Upload company logo if provided
-      if (companyLogoRef.current?.files?.length) {
-        const file = companyLogoRef.current.files[0]
-        try {
-          const uploadPath = `company-logos/${values.company.replace(/\s+/g, "-").toLowerCase()}_${Date.now()}_${file.name}`
-          companyLogoUrl = await uploadImageToStorage(file, uploadPath)
-          console.log("Company logo uploaded:", companyLogoUrl)
-        } catch (error) {
-          console.error("Error uploading company logo:", error)
-          toast({
-            title: "Upload Error",
-            description: "Failed to upload company logo. Using placeholder instead.",
-            variant: "destructive",
-          })
-        }
-      }
-
-      // Filter out empty resources
-      const filteredResources = values.resources?.filter((r) => r.title || r.url) || []
+      // Use the provided image URLs or default placeholders
+      const profileImageUrl = values.profilePictureUrl || "/placeholder.svg?height=100&width=100"
+      const companyLogoUrl = values.companyLogoUrl || "/placeholder.svg?height=40&width=40"
 
       // Create a new experience object
       const newExperience = {
@@ -292,6 +267,8 @@ export default function SubmissionForm() {
         companyLogo: companyLogoUrl,
         status: "pending" as const,
         email: values.email,
+        phoneNumber: values.phoneNumber,
+        rollNumber: values.rollNumber,
         role: values.role,
         graduationYear: values.graduationYear,
         package: values.package || "Not disclosed",
@@ -299,7 +276,7 @@ export default function SubmissionForm() {
         interviewProcess: values.interviewProcess,
         tips: values.tips,
         challenges: values.challenges,
-        resources: filteredResources,
+        resources: values.resources || [],
         linkedIn: values.linkedIn || "",
         github: values.github || "",
         personalEmail: values.personalEmail || "",
@@ -309,7 +286,11 @@ export default function SubmissionForm() {
 
       console.log("Saving experience to Firestore:", newExperience)
       // Save to Firestore
-      await saveExperienceToFirestore(newExperience)
+      const result = await saveExperienceToFirestore(newExperience)
+
+      if (!result) {
+        throw new Error("Failed to save experience to Firestore")
+      }
 
       toast({
         title: "Experience submitted successfully!",
@@ -322,7 +303,8 @@ export default function SubmissionForm() {
       console.error("Error submitting form:", error)
       toast({
         title: "Something went wrong.",
-        description: "Your experience couldn't be submitted. Please try again.",
+        description:
+          error instanceof Error ? error.message : "Your experience couldn't be submitted. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -358,7 +340,7 @@ export default function SubmissionForm() {
   const handleTabChange = (value: string) => {
     // Validate current tab before allowing change
     if (value === "placement" && activeTab === "personal") {
-      const personalFields = ["name", "email", "branch", "graduationYear"]
+      const personalFields = ["name", "email","phoneNumber", "rollNumber", "branch", "graduationYear"]
       const isValid = personalFields.every((field) => {
         return form.getFieldState(field as any).invalid !== true
       })
@@ -387,7 +369,7 @@ export default function SubmissionForm() {
   const goToNextTab = async () => {
     if (activeTab === "personal") {
       // Validate personal fields before proceeding
-      const personalFields = ["name", "email", "branch", "graduationYear"]
+      const personalFields = ["name", "email","phoneNumber", "rollNumber", "branch", "graduationYear"]
       const isValid = await form.trigger(personalFields as any)
 
       if (isValid) {
@@ -561,6 +543,37 @@ export default function SubmissionForm() {
                           <Input placeholder="your.email@nith.ac.in" {...field} />
                         </FormControl>
                         <FormDescription>Must be your NIT Hamirpur email</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="phoneNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone Number</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Your phone number" {...field} />
+                        </FormControl>
+                        <FormDescription>Will only be visible to admins</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="rollNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Roll Number</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Your NIT Hamirpur roll number" {...field} />
+                        </FormControl>
+                        <FormDescription>Will only be visible to admins</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
